@@ -35,14 +35,41 @@
 
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav mr-auto">
-          <li id='nav_item_live_results' class="nav-item">
-            <router-link to="/live_results" class="nav-link"><span class="fa fa-align-left" />&nbsp;Live Results</router-link>
+          <li
+            id="nav_item_live_results"
+            class="nav-item"
+          >
+            <router-link
+              to="/live_results"
+              class="nav-link"
+            >
+              <span class="fa fa-align-left" />
+              &nbsp;Live Results
+            </router-link>
           </li>
-          <li id='nav_item_heatcharts' class="nav-item">
-            <router-link to="/heatcharts" class="nav-link"><span class="fa fa-project-diagram" />&nbsp;Heatcharts</router-link>
+          <li
+            id="nav_item_heatcharts"
+            class="nav-item"
+          >
+            <router-link
+              to="/heatcharts"
+              class="nav-link"
+            >
+              <span class="fa fa-project-diagram" />
+              &nbsp;Heatcharts
+            </router-link>
           </li>
-          <li id='nav_item_results' class="nav-item">
-            <router-link to="/results" class="nav-link"><span class="fa fa-list" />&nbsp;Results</router-link>
+          <li
+            id="nav_item_results"
+            class="nav-item"
+          >
+            <router-link
+              to="/results"
+              class="nav-link"
+            >
+              <span class="fa fa-list" />
+              &nbsp;Results
+            </router-link>
           </li>
         </ul>
       </div>
