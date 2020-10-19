@@ -62,10 +62,6 @@ module.exports = {
       inject: true
     }),
     // new ESLintPlugin(),
-    new CopyWebpackPlugin([{
-      from: resolve('static/img'),
-      to: resolve('dist/static/img'),
-      toType: 'dir'
-    }])
+
   ]
 }
