@@ -1,5 +1,5 @@
 <template>
-  <h1>Hello!</h1>
+  <h1>Hello Results Table!</h1>
 </template>
 
 <script>
@@ -9,5 +9,5 @@ export default {
 
 <style lang="stylus" scoped>
 h1
-  color blue
+  color red
 </style>
