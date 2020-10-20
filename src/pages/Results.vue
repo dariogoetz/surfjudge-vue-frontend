@@ -10,7 +10,18 @@
       default-label="Select Category"
       @selected="select_category"
     />
-    <result-table />
+    <b-card-group deck>
+      <b-row>
+        <b-col>
+          <b-card>
+            <template #header>
+            </template>
+            content
+            <result-table url="results_url(heat.id)" />
+          </b-card>
+        </b-col>
+      </b-row>
+    </b-card-group>
   </div>
 </template>
 

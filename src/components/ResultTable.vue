@@ -1,9 +1,22 @@
 <template>
-  <h1>Hello Results Table!</h1>
+  <div>
+    <b-table :items="items" />
+  </div>
 </template>
 
 <script>
 export default {
+  props: {
+    url: {
+      type: String,
+      default: null
+    }
+  },
+  data () {
+    return {
+      items: []
+    }
+  }
 }
 </script>
 
