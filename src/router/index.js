@@ -6,6 +6,11 @@ import Results from '../pages/Results.vue'
 import LiveResults from '../pages/LiveResults.vue'
 import Heatcharts from '../pages/Heatcharts.vue'
 
+import '@fortawesome/fontawesome-free/js/fontawesome'
+import '@fortawesome/fontawesome-free/js/solid'
+import '@fortawesome/fontawesome-free/js/regular'
+import '@fortawesome/fontawesome-free/js/brands'
+
 Vue.use(VueRouter)
 
 const routes = [
