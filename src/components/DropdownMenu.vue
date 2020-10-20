@@ -50,16 +50,16 @@ export default {
       if (this.url === null) {
         return
       }
-      console.log('Fetching from', this.url)
+      console.debug('Fetching from', this.url)
       fetch(this.url)
         .then(response => response.json())
         .then(data => {
           this.elems = data
-          console.log('Dropdown menu fetched', data)
+          console.debug('Dropdown menu fetched', data)
         })
     },
     selected (elem) {
-      console.log('Dropdown menu: selected', elem)
+      console.debug('Dropdown menu: selected', elem)
       this.current_elem = elem
       this.$emit('selected', elem)
     }
