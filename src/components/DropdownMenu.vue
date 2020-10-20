@@ -26,6 +26,10 @@ export default {
     labelKey: {
       type: String,
       default: 'name'
+    },
+    selectFirst: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -55,6 +59,10 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.elems = data
+          if (this.selectFirst && this.elems.length > 0) {
+            console.debug('selected first')
+            this.selected(this.elems[0])
+          }
           console.debug('Dropdown menu fetched', data)
         })
     },
@@ -68,6 +76,5 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-h1
-  color green
+
 </style>

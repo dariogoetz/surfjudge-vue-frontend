@@ -3,21 +3,27 @@
     <dropdown-menu
       :url="tournaments_url"
       default-label="Select Tournament"
+      select-first
       @selected="select_tournament"
     />
     <dropdown-menu
       :url="categories_url"
       default-label="Select Category"
+      select-first
       @selected="select_category"
     />
-    <b-card-group deck>
+    <b-container>
       <b-row
         v-for="[round, round_heats] in heats_by_round"
         :key="round[0]"
+        cols-md="1"
+        cols-xl="1"
+        class="mb-sm-3"
       >
         <b-col
           v-for="h in round_heats"
           :key="h.id"
+          class="mb-sm-3"
         >
           <b-card
             header-bg-variant="secondary"
@@ -26,11 +32,15 @@
             <template #header>
               {{ h.name }}
             </template>
-            <result-table url="results_url(heat.id)" />
+            <result-table
+              :results-url="results_url(h.id)"
+              :heat-url="heat_url(h.id)"
+              :participations-url="participations_url(h.id)"
+            />
           </b-card>
         </b-col>
       </b-row>
-    </b-card-group>
+    </b-container>
   </div>
 </template>
 
@@ -57,7 +67,7 @@ export default {
     categories_url () {
       return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
     },
-    heats_url () {
+    category_heats_url () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/heats`
     },
     heats_by_round () {
@@ -94,9 +104,15 @@ export default {
     results_url (heatId) {
       return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/results`
     },
+    heat_url (heatId) {
+      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}`
+    },
+    participations_url (heatId) {
+      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/participations`
+    },
     fetch_heats (category) {
-      console.debug('Fetching heats from', this.heats_url)
-      fetch(this.heats_url)
+      console.debug('Fetching heats from', this.category_heats_url)
+      fetch(this.category_heats_url)
         .then(response => response.json())
         .then(data => { console.debug('Fetched heats', data); this.heats = data })
     }

@@ -2,10 +2,10 @@
   <div>
     <b-navbar toggleable="lg" type="dark" variant="dark">
       <b-navbar-brand href="#">
-        <b-link to="/" class="navbar-brand" style="padding:0;">
+        <b-link to="/" class="navbar-brand">
           <img src="/static/img/SurfjudgeLogo.png">
         </b-link>
-        <b-link to="/" class="navbar-brand" style="padding:0;">
+        <b-link to="/" class="navbar-brand">
           <img src="/static/img/DWV_Logo_weiß_small.png">
         </b-link>
       </b-navbar-brand>
