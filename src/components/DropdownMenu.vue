@@ -1,25 +1,14 @@
 <template>
   <div>
-    <button
-      class="btn btn-secondary dropdown-toggle"
-      type="button"
-      data-toggle="dropdown"
-      aria-haspopup="true"
-      aria-expanded="false"
-    >
-      {{ label }}
-    </button>
-    <div class="dropdown-menu">
-      <a
+    <b-dropdown :text="label">
+      <b-dropdown-item
         v-for="elem in elems"
         :key="elem.id"
-        class="dropdown-item"
-        href="#"
         @click="selected(elem)"
       >
-        {{ elem.name }}
-      </a>
-    </div>
+        {{ elem[labelKey] }}
+      </b-dropdown-item>
+    </b-dropdown>
   </div>
 </template>
 

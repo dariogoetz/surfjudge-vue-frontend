@@ -1,79 +1,33 @@
 <template>
   <div>
-    <nav
-      class="navbar navbar-expand-lg navbar-dark bg-dark"
-      role="navigation"
-    >
-      <div class="navbar-header">
-        <button
-          type="button"
-          class="navbar-toggler"
-          data-toggle="collapse"
-          data-target=".navbar-collapse"
-        >
-          <span class="navbar-toggler-icon" />
-        </button>
-        <router-link
-          to="/"
-          class="navbar-brand"
-          style="padding:0;"
-        >
-          <img
-            src="/static/img/SurfjudgeLogo.png"
-          >
-        </router-link>
-        <router-link
-          to="/"
-          class="navbar-brand"
-          style="padding:0;"
-        >
-          <img
-            src="/static/img/DWV_Logo_weiß_small.png"
-          >
-        </router-link>
-      </div>
+    <b-navbar toggleable="lg" type="dark" variant="dark">
+      <b-navbar-brand href="#">
+        <b-link to="/" class="navbar-brand" style="padding:0;">
+          <img src="/static/img/SurfjudgeLogo.png">
+        </b-link>
+        <b-link to="/" class="navbar-brand" style="padding:0;">
+          <img src="/static/img/DWV_Logo_weiß_small.png">
+        </b-link>
+      </b-navbar-brand>
+      <b-navbar-toggle target="nav-collapse" />
 
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav mr-auto">
-          <li
-            id="nav_item_live_results"
-            class="nav-item"
-          >
-            <router-link
-              to="/live_results"
-              class="nav-link"
-            >
-              <span class="fa fa-align-left" />
-              &nbsp;Live Results
-            </router-link>
-          </li>
-          <li
-            id="nav_item_heatcharts"
-            class="nav-item"
-          >
-            <router-link
-              to="/heatcharts"
-              class="nav-link"
-            >
-              <span class="fa fa-project-diagram" />
-              &nbsp;Heatcharts
-            </router-link>
-          </li>
-          <li
-            id="nav_item_results"
-            class="nav-item"
-          >
-            <router-link
-              to="/results"
-              class="nav-link"
-            >
-              <span class="fa fa-list" />
-              &nbsp;Results
-            </router-link>
-          </li>
-        </ul>
-      </div>
-    </nav>
+      <b-collapse id="nav-collapse" is-nav>
+        <b-navbar-nav>
+          <b-nav-item to="/live_results">
+            <span class="fa fa-align-left" />
+            &nbsp;Live Results
+          </b-nav-item>
+          <b-nav-item to="/heatcharts">
+            <span class="fa fa-project-diagram" />
+            &nbsp;Heatcharts
+          </b-nav-item>
+          <b-nav-item to="/results">
+            <span class="fa fa-list" />
+            &nbsp;Results
+          </b-nav-item>
+        </b-navbar-nav>
+      </b-collapse>
+    </b-navbar>
     <router-view />
   </div>
 </template>
