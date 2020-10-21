@@ -5,6 +5,8 @@
 </template>
 
 <script>
+const utils = require('../utils/lighten_darken_color')
+
 export default {
   props: {
     resultsUrl: {
