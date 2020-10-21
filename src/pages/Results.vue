@@ -26,6 +26,7 @@
           class="mb-sm-3"
         >
           <b-card
+            no-body
             header-bg-variant="secondary"
             header-text-variant="white"
           >
@@ -62,13 +63,15 @@ export default {
   },
   computed: {
     tournaments_url () {
-      return 'http://localhost:8081/rest/tournaments'
+      return 'https://www.surfjudge.de/rest/tournaments'
     },
     categories_url () {
       return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
+      // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     },
     category_heats_url () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/heats`
+      // return this.category === null ? null : `https://www.surfjudge.de/rest/heats?category_id=${this.category.id}`
     },
     heats_by_round () {
       const r2h = new Map()
@@ -103,12 +106,15 @@ export default {
     },
     results_url (heatId) {
       return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/results`
+      // return heatId === null ? null : `https://www.surfjudge.de/rest/results/${heatId}`
     },
     heat_url (heatId) {
       return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}`
+      // return heatId === null ? null : `https://www.surfjudge.de/rest/heats/${heatId}`
     },
     participations_url (heatId) {
       return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/participations`
+      // return heatId === null ? null : `https://www.surfjudge.de/rest/participants/${heatId}`
     },
     fetch_heats (category) {
       console.debug('Fetching heats from', this.category_heats_url)

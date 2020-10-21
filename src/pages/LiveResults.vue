@@ -6,6 +6,7 @@
     />
     <b-container>
       <b-card
+        no-body
         header-bg-variant="secondary"
         header-text-variant="white"
       >
