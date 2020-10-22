@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-dropdown :text="label">
+    <b-dropdown :text="label" :right="right">
       <b-dropdown-item
         v-for="elem in elems"
         :key="elem.id"
@@ -30,6 +30,10 @@ export default {
     selectFirst: {
       type: Boolean,
       default: false
+    },
+    right: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -54,20 +58,16 @@ export default {
       if (this.url === null) {
         return
       }
-      console.debug('Fetching from', this.url)
       fetch(this.url)
         .then(response => response.json())
         .then(data => {
           this.elems = data
           if (this.selectFirst && this.elems.length > 0) {
-            console.debug('selected first')
             this.selected(this.elems[0])
           }
-          console.debug('Dropdown menu fetched', data)
         })
     },
     selected (elem) {
-      console.debug('Dropdown menu: selected', elem)
       this.current_elem = elem
       this.$emit('selected', elem)
     }
