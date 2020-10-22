@@ -14,7 +14,7 @@
 </template>
 
 <script>
-const utils = require('../utils/lighten_darken_color')
+import { lighten } from '../utils/lighten_darken_color'
 
 export default {
   props: {
@@ -61,8 +61,18 @@ export default {
         {
           key: 'surfer'
         },
-        'score',
-        ...[...Array(this.nWaves).keys()].map((v) => `wave_${v + 1}`)
+        {
+          key: 'total_score',
+          label: 'Score',
+          formatter: (s) => this.round(s, this.roundDecimals).toFixed(this.roundDecimals)
+        },
+        ...[...Array(this.nWaves).keys()].map((v, i) => {
+          return {
+            key: `wave_${i}`,
+            formatter: (s) => this.round(s.score, this.roundDecimals).toFixed(this.roundDecimals),
+            label: `Wave ${i + 1}`
+          }
+        })
       ]
     },
     rows () {
@@ -81,20 +91,17 @@ export default {
         }
 
         if (resultMap.has(part.surfer_id)) {
-          // add place and formatted total score to row array
+          // add place and formatted total score to row
           const r = resultMap.get(part.surfer_id)
           Object.assign(row, {
             place: r.place + 1,
-            score: this.round(r.total_score, this.roundDecimals).toFixed(this.roundDecimals)
+            total_score: r.total_score
           })
 
-          // sort wave scores, format and put to row array
-          r.wave_scores
-            .slice()
-            .sort((a, b) => a.wave - b.wave)
-            .forEach((v, i) => {
-              row['wave_' + (v.wave + 1)] = this.round(v.score, this.roundDecimals).toFixed(this.roundDecimals)
-            })
+          // extract wave scores into row
+          r.wave_scores.forEach((v, i) => {
+            row[`wave_${v.wave}`] = v
+          })
         } else {
           // place and score not available
           Object.assign(row, {
@@ -147,7 +154,7 @@ export default {
     },
     row_attr (item, type) {
       return {
-        style: `background-color:  ${utils.lighten(item.lycra_color.hex)};`
+        style: `background-color:  ${lighten(item.lycra_color.hex)};`
       }
     }
   }
