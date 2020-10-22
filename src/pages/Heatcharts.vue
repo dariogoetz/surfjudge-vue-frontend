@@ -7,5 +7,11 @@
 <script>
 
 export default {
+  props: {
+    tournament: {
+      type: Object,
+      default: null
+    }
+  }
 }
 </script>

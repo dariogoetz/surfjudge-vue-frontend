@@ -15,29 +15,65 @@
         <b-navbar-nav>
           <b-nav-item to="/live_results">
             <span class="fa fa-align-left" />
-            &nbsp;Live Results
+            Live Results
           </b-nav-item>
           <b-nav-item to="/heatcharts">
             <span class="fa fa-project-diagram" />
-            &nbsp;Heatcharts
+            Heatcharts
           </b-nav-item>
           <b-nav-item to="/results">
             <span class="fa fa-list" />
-            &nbsp;Results
+            Results
           </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
+
+      <b-navbar-nav class="ml-auto">
+        <dropdown-menu
+          :url="tournaments_url"
+          default-label="Select Tournament"
+          select-first
+          right
+          @selected="select_tournament"
+        />
+      </b-navbar-nav>
     </b-navbar>
-    <router-view />
+
+    <router-view :tournament="tournament" />
   </div>
 </template>
 
 <script>
-export default {}
+import DropdownMenu from '../components/DropdownMenu.vue'
+
+export default {
+  components: {
+    DropdownMenu
+  },
+  data () {
+    return {
+      tournament: null
+    }
+  },
+  computed: {
+    tournaments_url () {
+      return 'http://localhost:8081/rest/tournaments'
+      // return 'https://www.surfjudge.de/rest/tournaments'
+    }
+  },
+  methods: {
+    select_tournament (tournament) {
+      this.tournament = tournament
+    }
+  }
+}
 </script>
 
 <style lang="stylus" scoped>
   nav
+    padding 0
+
+  a.navbar-brand
     padding 0
 
   img

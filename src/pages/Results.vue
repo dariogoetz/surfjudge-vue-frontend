@@ -1,18 +1,12 @@
 <template>
   <div>
-    <dropdown-menu
-      :url="tournaments_url"
-      default-label="Select Tournament"
-      select-first
-      @selected="select_tournament"
-    />
-    <dropdown-menu
-      :url="categories_url"
-      default-label="Select Category"
-      select-first
-      @selected="select_category"
-    />
     <b-container>
+      <dropdown-menu
+        :url="categories_url"
+        default-label="Select Category"
+        select-first
+        @selected="select_category"
+      />
       <b-row
         v-for="[round, round_heats] in heats_by_round"
         :key="round[0]"
@@ -54,16 +48,22 @@ export default {
     DropdownMenu,
     ResultTable
   },
+  props: {
+    tournament: {
+      type: Object,
+      default: null
+    }
+  },
   data () {
     return {
-      tournament: null,
       category: null,
       heats: []
     }
   },
   computed: {
     tournaments_url () {
-      return 'https://www.surfjudge.de/rest/tournaments'
+      return 'http://localhost:8081/rest/tournaments'
+      // return 'https://www.surfjudge.de/rest/tournaments'
     },
     categories_url () {
       return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
@@ -94,13 +94,13 @@ export default {
       return roundsHeats
     }
   },
+  watch: {
+    tournament (val) {
+      this.category = null
+    }
+  },
   methods: {
-    select_tournament (tournament) {
-      console.debug('Results: selected tournament', tournament)
-      this.tournament = tournament
-    },
     select_category (category) {
-      console.debug('Results: selected category', category)
       this.category = category
       this.fetch_heats()
     },
@@ -117,11 +117,15 @@ export default {
       // return heatId === null ? null : `https://www.surfjudge.de/rest/participants/${heatId}`
     },
     fetch_heats (category) {
-      console.debug('Fetching heats from', this.category_heats_url)
       fetch(this.category_heats_url)
         .then(response => response.json())
-        .then(data => { console.debug('Fetched heats', data); this.heats = data })
+        .then(data => { this.heats = data })
     }
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+.card-header
+  font-size 2em
+</style>
