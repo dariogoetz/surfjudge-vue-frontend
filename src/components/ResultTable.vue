@@ -32,7 +32,7 @@ export default {
     },
     decimals: {
       type: Number,
-      default: 1
+      default: 2
     }
   },
   data () {
@@ -51,26 +51,36 @@ export default {
           key: 'lycra_color',
           label: '', // don't show header
           formatter: () => '', // don't show any text in cell
-          tdAttr: (value, key, item) => { return { style: `background-color: ${value.hex};` } } // lycra hex color as background
+          tdAttr: (value, key, item) => { return { style: `background-color: ${value.hex};` } }, // lycra hex color as background
+          tdClass: 'color_cell',
+          thClass: 'color_header'
         },
         {
           key: 'place',
           label: '',
-          formatter: (p) => `${p}.`
+          formatter: (p) => `${p}.`,
+          tdClass: 'place_cell',
+          thClass: 'place_header'
         },
         {
-          key: 'surfer'
+          key: 'surfer',
+          tdClass: 'surfer_cell',
+          thClass: 'surfer_header'
         },
         {
           key: 'total_score',
           label: 'Score',
-          formatter: (s) => this.round(s, this.roundDecimals).toFixed(this.roundDecimals)
+          formatter: (s) => this.round(s, this.roundDecimals).toFixed(this.roundDecimals),
+          tdClass: 'total_score_cell',
+          thClass: 'total_score_header'
         },
         ...[...Array(this.nWaves).keys()].map((v, i) => {
           return {
             key: `wave_${i}`,
             formatter: (s) => this.round(s.score, this.roundDecimals).toFixed(this.roundDecimals),
-            label: `Wave ${i + 1}`
+            label: `Wave ${i + 1}`,
+            tdClass: (value, key, item) => value.best_wave ? 'best_wave wave_score_cell' : 'wave_score_cell',
+            thClass: 'wave_score_header'
           }
         })
       ]
@@ -78,8 +88,9 @@ export default {
     rows () {
       if (this.results === null) return []
       if (this.participations === null) return []
+
       const resultMap = new Map() // map surfer_id -> scores
-      this.results.forEach((v, i) => {
+      this.annotate_best_waves_standard(this.results).forEach((v, i) => {
         resultMap.set(v.surfer_id, v)
       })
 
@@ -115,9 +126,10 @@ export default {
     },
     nWaves () {
       // parse all wave scores and find maximum wave number
-      return Math.max(...this.results.map((res) =>
+      const m = Math.max(0, ...this.results.map((res) =>
         Math.max(...res.wave_scores.map((v) => v.wave)
         )))
+      return m
     },
     roundDecimals () {
       if (this.heat === null) return this.decimals
@@ -156,11 +168,38 @@ export default {
       return {
         style: `background-color:  ${lighten(item.lycra_color.hex)};`
       }
+    },
+    annotate_best_waves_standard (results) {
+      const res = []
+      results.forEach((surferResults) => {
+        const s = Object.assign({}, surferResults)
+        s.wave_scores = s.wave_scores.slice().sort((a, b) => b.score - a.score)
+        if (s.wave_scores.length > 1) s.wave_scores[0].best_wave = true
+        if (s.wave_scores.length > 2) s.wave_scores[1].best_wave = true
+        res.push(s)
+      })
+      return res
+    },
+    annotate_best_waves_call (results) {
+
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+table >>> thead > tr
+  font-weight bold
+  font-size 1.5em
+  font-align center
+  background-color #CCCCCC
 
+table >>> thead > tr > th.color_header
+  background-color #FFFFFF
+
+table >>> tr
+  font-size 1.5em
+
+table >>> td.best_wave
+  font-weight bold
 </style>
