@@ -2,18 +2,26 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
+import {
+  LayoutPlugin,
+  CardPlugin,
+  DropdownPlugin,
+  TablePlugin,
+  NavbarPlugin,
+  NavPlugin,
+  IconsPlugin
+} from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 import '../assets/css/app.styl'
 
-import '@fortawesome/fontawesome-free/js/fontawesome'
-import '@fortawesome/fontawesome-free/js/solid'
-import '@fortawesome/fontawesome-free/js/regular'
-import '@fortawesome/fontawesome-free/js/brands'
-
-Vue.use(BootstrapVue)
+Vue.use(LayoutPlugin)
+Vue.use(CardPlugin)
+Vue.use(DropdownPlugin)
+Vue.use(TablePlugin)
+Vue.use(NavbarPlugin)
+Vue.use(NavPlugin)
 Vue.use(IconsPlugin)
 
 /* eslint-disable-next-line no-new */

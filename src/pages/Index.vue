@@ -14,15 +14,15 @@
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
           <b-nav-item to="/live_results">
-            <span class="fa fa-align-left" />
+            <b-icon-filter-left />
             Live Results
           </b-nav-item>
           <b-nav-item to="/heatcharts">
-            <span class="fa fa-project-diagram" />
+            <b-icon-diagram3 />
             Heatcharts
           </b-nav-item>
           <b-nav-item to="/results">
-            <span class="fa fa-list" />
+            <b-icon-list-ul />
             Results
           </b-nav-item>
         </b-navbar-nav>

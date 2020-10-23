@@ -6,6 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // const ESLintPlugin = require('eslint-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const path = require('path')
 
 function resolve (dir) {
@@ -68,6 +69,7 @@ module.exports = {
         to: resolve('dist/static/img'),
         toType: 'dir'
       }]
-    })
+    }),
+    new CompressionWebpackPlugin()
   ]
 }
