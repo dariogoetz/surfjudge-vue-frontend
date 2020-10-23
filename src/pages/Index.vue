@@ -32,6 +32,7 @@
         <dropdown-menu
           :url="tournaments_url"
           default-label="Select Tournament"
+          variant="dark"
           select-first
           right
           @selected="select_tournament"
