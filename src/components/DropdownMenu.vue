@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-dropdown :text="label" :right="right">
+    <b-dropdown :text="label" :right="right" :variant="variant">
       <b-dropdown-item
         v-for="elem in elems"
         :key="elem.id"
@@ -34,6 +34,10 @@ export default {
     right: {
       type: Boolean,
       default: false
+    },
+    variant: {
+      type: String,
+      default: 'secondary'
     }
   },
   data () {
