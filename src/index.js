@@ -9,6 +9,7 @@ import {
   TablePlugin,
   NavbarPlugin,
   NavPlugin,
+  LinkPlugin,
   IconsPlugin
 } from 'bootstrap-vue'
 
@@ -22,6 +23,8 @@ Vue.use(DropdownPlugin)
 Vue.use(TablePlugin)
 Vue.use(NavbarPlugin)
 Vue.use(NavPlugin)
+Vue.use(LinkPlugin)
+
 Vue.use(IconsPlugin)
 
 /* eslint-disable-next-line no-new */
