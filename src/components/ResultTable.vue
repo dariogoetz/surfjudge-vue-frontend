@@ -138,26 +138,28 @@ export default {
     }
   },
   created () {
-    this.fetch_results()
-    this.fetch_heat()
-    this.fetch_participations()
+    Promise.all([
+      this.fetch_results(),
+      this.fetch_heat(),
+      this.fetch_participations()
+    ])
   },
   methods: {
     fetch_results () {
       if (this.resultsUrl === null) return
-      fetch(this.resultsUrl)
+      return fetch(this.resultsUrl)
         .then(response => response.json())
         .then(data => { this.results = data })
     },
     fetch_heat () {
-      if (this.heatUrl === null) return
-      fetch(this.heatUrl)
+      if (this.heatsUrl === null) return
+      return fetch(this.heatUrl)
         .then(response => response.json())
         .then(data => { this.heat = data })
     },
     fetch_participations () {
       if (this.participationsUrl === null) return
-      fetch(this.participationsUrl)
+      return fetch(this.participationsUrl)
         .then(response => response.json())
         .then(data => { this.participations = data })
     },
