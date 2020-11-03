@@ -96,11 +96,22 @@ export default {
     },
     toAdvancementsMap () {
       console.debug('compute toAdvancementsMap')
-      if (this.advancements === null) return new Map()
       const res = new Map()
       this.advancements.forEach((adv) => {
         if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
         res.get(adv.to_heat_id).push(adv)
+      })
+      res.forEach((advs) => advs.sort(
+        (a, b) => a.seed - b.seed
+      ))
+      return res
+    },
+    fromAdvancementsMap () {
+      console.debug('compute fromAdvancementsMap')
+      const res = new Map()
+      this.advancements.forEach((adv) => {
+        if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
+        res.get(adv.from_heat_id).push(adv)
       })
       res.forEach((advs) => advs.sort(
         (a, b) => a.seed - b.seed
@@ -208,12 +219,63 @@ export default {
         procHeat.results = this.resultsMap.get(heat.id) || []
         procHeat.nParticipants = this.nParticipants.get(heat.id) || 0
         procHeat.coordinates = this.heatCoordinates.get(heat.id)
+        // out- and in-links to be fetched from processedTo/FromAdvancementsMap
+        // because processedLinks depend on processedHeats for coordinates
         res.set(heat.id, procHeat)
       })
-
       return res
     },
-    processedLinks () {},
+    processedAdvancements () {
+      if (this.advancements === null) return []
+      console.debug('compute processedLinks')
+      // depends on processedHeats for coordinates
+      const _sourceCoords = (link) => {
+        const s = this.processedHeats.get(link.from_heat_id)
+        return [
+          s.coordinates.targetX + this.heatWidth,
+          s.coordinates.targetY + this.rowHeight * (0.5 + link.place)
+        ]
+      }
+      const _targetCoords = (link) => {
+        const t = this.processedHeats.get(link.to_heat_id)
+        return [
+          t.coordinates.targetX + this.heatWidth,
+          t.coordinates.targetY + this.rowHeight * (0.5 + link.seed)
+        ]
+      }
+      const res = []
+      this.advancements.forEach((adv) => {
+        const link = Object.assign({}, adv)
+        link.sourceCoordinates = _sourceCoords(adv)
+        link.targetCoordinates = _targetCoords(adv)
+        res.push(link)
+      })
+      return res
+    },
+    processedToAdvancementsMap () {
+      console.debug('compute processedToAdvancementsMap')
+      const res = new Map()
+      this.processedAdvancements.forEach((adv) => {
+        if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
+        res.get(adv.to_heat_id).push(adv)
+      })
+      res.forEach((advs) => advs.sort(
+        (a, b) => a.seed - b.seed
+      ))
+      return res
+    },
+    processedFromAdvancementsMap () {
+      console.debug('compute processedFromAdvancementsMap')
+      const res = new Map()
+      this.processedAdvancements.forEach((adv) => {
+        if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
+        res.get(adv.from_heat_id).push(adv)
+      })
+      res.forEach((advs) => advs.sort(
+        (a, b) => a.seed - b.seed
+      ))
+      return res
+    },
   },
   mounted () {
     this.initSvg()
@@ -224,7 +286,10 @@ export default {
       this.fetchParticipations()
     ]).then(() => {
       console.debug('fetched all')
-      console.log(this.processedHeats)
+      console.debug(this.processedHeats)
+      console.debug(this.processedAdvancements)
+      console.debug(this.processedToAdvancementsMap)
+
     })
   },
   methods: {
