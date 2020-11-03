@@ -39,7 +39,19 @@ export default {
       else return Math.floor(Math.min(this.targetWidth, this.scalingFactor * this.internalWidth)) - 5
     },
     internalWidth () { return 100 },
-    internalHeight () { return 100 },
+    internalHeight () {
+      let res = 0
+      this.roundHeats.forEach((heats, round) => {
+        heats.forEach((heat) => {
+          res = Math.max(
+            res,
+            this.roundRows.get(round) * this.rowHeight +
+              (this.roundHeats.get(round).length + 1) * this.heatVerticalSpacing
+          )
+        })
+      })
+      return res
+    },
     viewBox () {
       console.debug('compute viewBox')
       const ext2int = this.internalWidth / (this.width - this.marginLeft - this.marginRight)
@@ -95,22 +107,6 @@ export default {
       ))
       return res
     },
-    round2Heats () {
-      console.debug('compute round2Heats')
-      if (this.heats === null) return new Map()
-      const res = new Map()
-      this.heats.forEach((heat) => {
-        if (!res.has(heat.round)) res.set(heat.round, [])
-        res.get(heat.round).push(heat)
-      })
-      // sort heats in round
-      res.forEach(
-        (heats) => heats.sort(
-          (a, b) => a.number_in_round - b.number_in_round
-        )
-      )
-      return res
-    },
     nParticipants () {
       if (this.heats === null) return new Map()
       if (this.participations === null) return new Map()
@@ -138,11 +134,27 @@ export default {
       })
       return res
     },
-    round2Slots () {
+    roundHeats () {
+      console.debug('compute round2Heats')
+      if (this.heats === null) return new Map()
+      const res = new Map()
+      this.heats.forEach((heat) => {
+        if (!res.has(heat.round)) res.set(heat.round, [])
+        res.get(heat.round).push(heat)
+      })
+      // sort heats in round
+      res.forEach(
+        (heats) => heats.sort(
+          (a, b) => a.number_in_round - b.number_in_round
+        )
+      )
+      return res
+    },
+    roundRows () {
       console.debug('compute round2Slots')
       // sum all numbers of participants for heats an each round
       const res = new Map()
-      this.round2Heats.forEach((heats, round) => {
+      this.roundHeats.forEach((heats, round) => {
         res.set(round,
           heats
             .map((h) => this.nParticipants.get(h.id) || 0)
@@ -154,15 +166,31 @@ export default {
     },
     heatCoordinates () {
       console.debug('compute heatCoordinates')
+      const addSymbolOffset = 0
+      const nRounds = Array.from(this.roundHeats.keys()).length
       const res = new Map()
-      Array.from(this.round2Heats.keys())
+      Array.from(this.roundHeats.keys())
         .sort()
         .forEach((round, roundIdx) => {
           let slots = 0
-          this.round2Heats.get(round)
+          const initialPadding = (this.internalHeight -
+            this.roundRows.get(round) * this.rowHeight -
+            (this.roundHeats.get(round).length + 1) * this.heatVerticalSpacing) /
+              (this.roundHeats.get(round).length + 1) +
+            this.heatVerticalSpacing
+          this.roundHeats.get(round)
             .sort((a, b) => a.number_in_round - b.number_in_round)
-            .forEach((heat, idx) => {
-              res.set(heat.id, [roundIdx, slots])
+            .forEach((heat, heatIdx) => {
+              res.set(heat.id, {
+                roundIndex: roundIdx,
+                numberInRoundIndex: heatIdx,
+                rowsAbove: slots,
+                targetX: addSymbolOffset + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth),
+                targetY: initialPadding + heatIdx * this.heatVerticalSpacing + slots * this.rowHeight
+              })
+              // real coordinates can be computed with
+              // x: x-offset(round) + (total_rounds - roundIndex - 1) * (x-spacing + heatWidth)
+              // y: y-offset(round) + numberInRoundIndex * y-spacing + rowsAbove * slotHeight
               slots += this.nParticipants.get(heat.id) || 0
             })
         })
@@ -179,7 +207,7 @@ export default {
         procHeat.participations = this.participationsMap.get(heat.id) || []
         procHeat.results = this.resultsMap.get(heat.id) || []
         procHeat.nParticipants = this.nParticipants.get(heat.id) || 0
-        procHeat.coordinatess = this.heatCoordinates.get(heat.id)
+        procHeat.coordinates = this.heatCoordinates.get(heat.id)
         res.set(heat.id, procHeat)
       })
 
