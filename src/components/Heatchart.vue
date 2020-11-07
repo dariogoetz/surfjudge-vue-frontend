@@ -4,6 +4,7 @@
 
 <script>
 import * as d3 from 'd3'
+import parseISOLocal from '../utils/parse_local_date'
 
 export default {
   props: {
@@ -20,9 +21,11 @@ export default {
     marginRight: { type: Number, default: 0 },
 
     heatWidth: { type: Number, default: 280 },
-    heatVerticalSpacing: { type: Number, default: 50 },
+    heatMinVerticalSpacing: { type: Number, default: 50 },
     heatHorizontalSpacing: { type: Number, default: 100 },
-    rowHeight: { type: Number, default: 18 }
+    rowHeight: { type: Number, default: 18 },
+
+    addSymbolOffset: { type: Number, default: 0 }
 
   },
   data () {
@@ -30,7 +33,11 @@ export default {
       heats: null, // array
       advancements: null, // array
       participations: null, // array
-      results: null
+      results: null,
+      d3Svg: null,
+      d3Heats: null,
+      d3Links: null,
+      d3GroupEnters: {}
     }
   },
   computed: {
@@ -38,7 +45,12 @@ export default {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
       else return Math.floor(Math.min(this.targetWidth, this.scalingFactor * this.internalWidth)) - 5
     },
-    internalWidth () { return 100 },
+    internalWidth () {
+      const nRounds = Array.from(this.roundHeats.keys()).length
+      const res = this.addSymbolOffset + nRounds * (this.heatWidth + this.heatHorizontalSpacing) + this.heatHorizontalSpacing
+      console.debug(res)
+      return res
+    },
     internalHeight () {
       let res = 0
       this.roundHeats.forEach((heats, round) => {
@@ -46,10 +58,11 @@ export default {
           res = Math.max(
             res,
             this.roundRows.get(round) * this.rowHeight +
-              (this.roundHeats.get(round).length + 1) * this.heatVerticalSpacing
+              (this.roundHeats.get(round).length + 1) * this.heatMinVerticalSpacing
           )
         })
       })
+      console.debug(res)
       return res
     },
     viewBox () {
@@ -177,27 +190,27 @@ export default {
     },
     heatCoordinates () {
       console.debug('compute heatCoordinates')
-      const addSymbolOffset = 0
       const nRounds = Array.from(this.roundHeats.keys()).length
       const res = new Map()
       Array.from(this.roundHeats.keys())
         .sort()
         .forEach((round, roundIdx) => {
           let slots = 0
-          const initialPadding = (this.internalHeight -
-            this.roundRows.get(round) * this.rowHeight -
-            (this.roundHeats.get(round).length + 1) * this.heatVerticalSpacing) /
-              (this.roundHeats.get(round).length + 1) +
-            this.heatVerticalSpacing
+          const verticalPadding = (this.internalHeight - this.roundRows.get(round) * this.rowHeight) /
+            (this.roundHeats.get(round).length + 1)
           this.roundHeats.get(round)
             .sort((a, b) => a.number_in_round - b.number_in_round)
             .forEach((heat, heatIdx) => {
+              const x = this.addSymbolOffset + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth)
+              const y = heatIdx * verticalPadding + slots * this.rowHeight + verticalPadding
               res.set(heat.id, {
                 roundIndex: roundIdx,
                 numberInRoundIndex: heatIdx,
                 rowsAbove: slots,
-                targetX: addSymbolOffset + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth),
-                targetY: initialPadding + heatIdx * this.heatVerticalSpacing + slots * this.rowHeight
+                targetX: x,
+                targetY: y,
+                x,
+                y
               })
               // real coordinates can be computed with
               // x: x-offset(round) + (total_rounds - roundIndex - 1) * (x-spacing + heatWidth)
@@ -229,6 +242,8 @@ export default {
       if (this.advancements === null) return []
       console.debug('compute processedLinks')
       // depends on processedHeats for coordinates
+
+      // TODO: detect circles
       const _sourceCoords = (link) => {
         const s = this.processedHeats.get(link.from_heat_id)
         return [
@@ -275,10 +290,9 @@ export default {
         (a, b) => a.seed - b.seed
       ))
       return res
-    },
+    }
   },
   mounted () {
-    this.initSvg()
     Promise.all([
       this.fetchHeats(),
       this.fetchResults(),
@@ -289,12 +303,14 @@ export default {
       console.debug(this.processedHeats)
       console.debug(this.processedAdvancements)
       console.debug(this.processedToAdvancementsMap)
-
+      this.initSvg()
+      this.drawHeats()
+      this.positionDraggables()
     })
   },
   methods: {
     initSvg () {
-      const svg = d3
+      this.d3Svg = d3
         .select('#heatchart')
         .append('svg')
         .attr('viewBox', this.viewBox)
@@ -322,11 +338,105 @@ export default {
       return fetch('http://localhost:8081/rest/categories/1/participations')
         .then(response => response.json())
         .then(data => { this.participations = data })
+    },
+    drawHeats () {
+      this.d3Heats = this.d3Svg
+        .append('g')
+        .attr('class', 'svg_heats')
+
+      // TODO: focus heat elem
+      this.genD3GroupEnters()
+      this.genHeatBoxes()
+      this.genHeatSeeds()
+    },
+    drawLinks () {},
+    positionDraggables () {
+      this.d3Heats
+        .selectAll('.heat_node')
+        .attr('transform', (d) => `translate(${d.coordinates.x + d.dragX}, ${d.coordinates.y + d.dragY})`)
+
+      // update ALL seed nodes (enter and existing)
+      this.d3Heats
+        .selectAll('.heat_seed')
+        .attr('transform', (d) => `translate(${d.x + d.dragX} ${d.y + d.dragY})`)
+    },
+    genD3GroupEnters () {
+      const heats = this.d3Heats
+        .selectAll('.heat_node')
+        .data(Array.from(this.processedHeats.values()), (d) => d.id)
+        .enter()
+        .append('g')
+        .attr('class', 'heat_node')
+        .attr('data-heatid', (node) => node.id)
+        .each((heatNode) => {
+          heatNode.dragX = 0
+          heatNode.dragY = 0
+        })
+
+      const seeds = heats
+        .selectAll('.heat_seed')
+        .data((d) => d3.range(d.nParticipants)
+          .map((seed) => ({
+            node: d,
+            seed: seed,
+            participant: d.participations.find((p) => p.seed === seed) || null
+          }))
+        )
+        .enter()
+        .append('g')
+        .each((seedNode) => {
+          // initialize new seed groups with correct position
+          // these might be changed later upon drag
+          // TODO: why not in selection data?
+          seedNode.x = 0
+          seedNode.y = seedNode.seed * this.rowHeight
+          seedNode.dragX = 0
+          seedNode.dragY = 0
+        })
+        .attr('class', (d) => d.participant ? 'heat_seed with_participant' : 'heat_seed')
+
+      this.d3GroupEnters = {
+        heats,
+        seeds
+      }
+    },
+    genHeatBoxes () {
+      this.d3GroupEnters.heats
+        .append('rect')
+        .attr('width', this.heatWidth)
+        .attr('height', (node) => this.rowHeight * node.nParticipants)
+        .lower() // place on top of group
+
+      this.d3GroupEnters.heats
+        .append('text')
+        .attr('class', 'title')
+        .attr('y', -5)
+        .text((node) => {
+          let label = 'name' in node ? node.name : 'heat not available - deleted?'
+          if (this.adminMode) label += `(number ${node.number_in_round + 1})`
+          if (node.start_datetime) {
+            const d = parseISOLocal(node.start_datetime)
+            label += ` (${d.toDateString().slice(0, 3)} ${d.toTimeString().slice(0, 5)})`
+          }
+          return label
+        })
+        .lower() // place on top of group
+    },
+    genHeatSeeds () {
+      this.d3GroupEnters.seeds
+        .append('rect')
+        .attr('width', this.heatWidth) // TODO: seed_width_factor
+        .attr('height', this.rowHeight)
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+div >>> .heat_node > rect
+  fill grey
 
+div >>> .heat_seed > rect
+  fill None
+  stroke black
 </style>
