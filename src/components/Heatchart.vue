@@ -46,12 +46,13 @@ export default {
       else return Math.floor(Math.min(this.targetWidth, this.scalingFactor * this.internalWidth)) - 5
     },
     internalWidth () {
+      console.debug('compute internalWidth')
       const nRounds = Array.from(this.roundHeats.keys()).length
       const res = this.addSymbolOffset + nRounds * (this.heatWidth + this.heatHorizontalSpacing) + this.heatHorizontalSpacing
-      console.debug(res)
       return res
     },
     internalHeight () {
+      console.debug('compute internalHeight')
       let res = 0
       this.roundHeats.forEach((heats, round) => {
         heats.forEach((heat) => {
@@ -62,7 +63,6 @@ export default {
           )
         })
       })
-      console.debug(res)
       return res
     },
     viewBox () {
@@ -240,7 +240,7 @@ export default {
     },
     processedAdvancements () {
       if (this.advancements === null) return []
-      console.debug('compute processedLinks')
+      console.debug('compute processedAdvancements')
       // depends on processedHeats for coordinates
 
       // TODO: detect circles
@@ -299,10 +299,6 @@ export default {
       this.fetchAdvancements(),
       this.fetchParticipations()
     ]).then(() => {
-      console.debug('fetched all')
-      console.debug(this.processedHeats)
-      console.debug(this.processedAdvancements)
-      console.debug(this.processedToAdvancementsMap)
       this.initSvg()
       this.drawHeats()
       this.positionDraggables()
@@ -379,7 +375,9 @@ export default {
           .map((seed) => ({
             node: d,
             seed: seed,
-            participant: d.participations.find((p) => p.seed === seed) || null
+            participant: d.participations.find((p) => p.seed === seed) || null,
+            x: 0,
+            y: seed * this.rowHeight
           }))
         )
         .enter()
@@ -387,9 +385,6 @@ export default {
         .each((seedNode) => {
           // initialize new seed groups with correct position
           // these might be changed later upon drag
-          // TODO: why not in selection data?
-          seedNode.x = 0
-          seedNode.y = seedNode.seed * this.rowHeight
           seedNode.dragX = 0
           seedNode.dragY = 0
         })
