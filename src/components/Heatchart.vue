@@ -5,6 +5,7 @@
 <script>
 import * as d3 from 'd3'
 import parseISOLocal from '../utils/parse_local_date'
+import { lighten } from '../utils/lighten_darken_color'
 
 export default {
   props: {
@@ -24,6 +25,9 @@ export default {
     heatMinVerticalSpacing: { type: Number, default: 50 },
     heatHorizontalSpacing: { type: Number, default: 100 },
     rowHeight: { type: Number, default: 18 },
+    seedWidthFactor: { type: Number, default: 0.475 },
+    placeWidthFactor: { type: Number, default: 0.475 },
+    scoreWidthFactor: { type: Number, default: 0.1 },
 
     addSymbolOffset: { type: Number, default: 0 }
 
@@ -344,6 +348,7 @@ export default {
       this.genD3GroupEnters()
       this.genHeatBoxes()
       this.genHeatSeeds()
+      this.genHeatPlaces()
     },
     drawLinks () {},
     positionDraggables () {
@@ -374,7 +379,7 @@ export default {
         .data((d) => d3.range(d.nParticipants)
           .map((seed) => ({
             node: d,
-            seed: seed,
+            seed,
             participant: d.participations.find((p) => p.seed === seed) || null,
             x: 0,
             y: seed * this.rowHeight
@@ -390,9 +395,39 @@ export default {
         })
         .attr('class', (d) => d.participant ? 'heat_seed with_participant' : 'heat_seed')
 
+      const scoreWidth = this.showTotalScores ? this.scoreWidthFactor * this.heatWidth : 0
+      const places = heats
+        .selectAll('.heat_place')
+        .data((d) => d3.range(d.nParticipants)
+          .map((place) => ({
+            node: d,
+            place
+          }))
+        )
+        .enter()
+        .append('g')
+        .attr('class', (d) => {
+          const result = (d.node.results || [])[d.place] || {}
+          let place = d.place
+          const showPlacing = true // TODO: false if this is a focus heat
+          if (showPlacing && result.place) place = result.place // multiple surfers may have the same place
+          switch (place) {
+            case 0:
+              return 'heat_place first'
+            case 1:
+              return 'heat_place second'
+            case 2:
+              return 'heat_place third'
+            default:
+              return 'heat_place'
+          }
+        })
+        .attr('transform', (d) => `translate(${(1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth} ${d.place * this.rowHeight})`)
+
       this.d3GroupEnters = {
         heats,
-        seeds
+        seeds,
+        places
       }
     },
     genHeatBoxes () {
@@ -418,20 +453,90 @@ export default {
         .lower() // place on top of group
     },
     genHeatSeeds () {
+      const seedWidthFactor = this.showTotalScores ? this.seedWidthFactor - this.scoreWidthFactor : this.seedWidthFactor
+      const seedWidth = seedWidthFactor * this.heatWidth
       this.d3GroupEnters.seeds
         .append('rect')
-        .attr('width', this.heatWidth) // TODO: seed_width_factor
+        .attr('width', seedWidth)
         .attr('height', this.rowHeight)
+        .attr('fill', (d) => {
+          if (d.participant && d.participant.lycra_color.hex) {
+            return lighten(d.participant.lycra_color.hex)
+          } else {
+            return 'white'
+          }
+        })
+
+      this.d3GroupEnters.seeds
+        .append('text')
+        .attr('x', 0.5 * seedWidth)
+        .attr('y', this.rowHeight * 1.95 / 3)
+        .text((d) => {
+          if (d.participant && d.participant.surfer) {
+            const s = d.participant.surfer
+            return `${s.first_name} ${s.last_name}`
+          } else {
+            return `Seed ${d.seed + 1}`
+          }
+        })
+    },
+    genHeatPlaces () {
+      // names only half the total height to make space for individual scores, if applicable
+      const rowHeight = this.showIndividualScores ? 0.5 * this.rowHeight : this.rowHeight
+      const placeWidth = this.placeWidthFactor * this.heatWidth
+      this.d3GroupEnters.places
+        .append('rect')
+        .attr('width', placeWidth)
+        .attr('height', rowHeight)
+
+      this.d3GroupEnters.places
+        .append('text')
+        .attr('x', 0.5 * placeWidth)
+        .attr('y', rowHeight * 1.95 / 3)
+        .text((d) => {
+          const result = (d.node.results || []).find((r) => r.place === d.place)
+          // only show placings for not active heats (for an active heat, the placing is not fixed)
+          const showPlacing = true // TODO: false if this is a focus heat
+          if (result && showPlacing) {
+            const s = result.surfer
+            return `${s.first_name} ${s.last_name}`
+          } else {
+            return `${d.place + 1}. place`
+          }
+        })
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+
+// heat boxes
 div >>> .heat_node > rect
   fill grey
 
-div >>> .heat_seed > rect
-  fill None
-  stroke black
+div >>> .heat_node text
+  font 10px sans-serif
+
+// participant names
+div >>> .heat_seed > text
+  text-anchor middle
+  alignment-baseline middle
+
+div >>> .heat_place > rect
+  fill white
+
+div >>> .heat_place.first > rect
+  fill gold
+
+div >>> .heat_place.second > rect
+  fill silver
+
+div >>> .heat_place.third > rect
+  fill #cd7f32
+
+div >>> .heat_place > text
+  text-anchor middle
+  alignment-baseline middle
+
 </style>
