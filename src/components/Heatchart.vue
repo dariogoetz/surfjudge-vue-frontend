@@ -41,6 +41,7 @@ export default {
       d3Svg: null,
       d3Heats: null,
       d3Links: null,
+      d3GroupSelections: {},
       d3GroupEnters: {}
     }
   },
@@ -199,18 +200,18 @@ export default {
       Array.from(this.roundHeats.keys())
         .sort()
         .forEach((round, roundIdx) => {
-          let slots = 0
+          let rows = 0
           const verticalPadding = (this.internalHeight - this.roundRows.get(round) * this.rowHeight) /
             (this.roundHeats.get(round).length + 1)
           this.roundHeats.get(round)
             .sort((a, b) => a.number_in_round - b.number_in_round)
             .forEach((heat, heatIdx) => {
               const x = this.addSymbolOffset + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth)
-              const y = heatIdx * verticalPadding + slots * this.rowHeight + verticalPadding
+              const y = heatIdx * verticalPadding + rows * this.rowHeight + verticalPadding
               res.set(heat.id, {
                 roundIndex: roundIdx,
                 numberInRoundIndex: heatIdx,
-                rowsAbove: slots,
+                rowsAbove: rows,
                 targetX: x,
                 targetY: y,
                 x,
@@ -219,7 +220,7 @@ export default {
               // real coordinates can be computed with
               // x: x-offset(round) + (total_rounds - roundIndex - 1) * (x-spacing + heatWidth)
               // y: y-offset(round) + numberInRoundIndex * y-spacing + rowsAbove * slotHeight
-              slots += this.nParticipants.get(heat.id) || 0
+              rows += this.nParticipants.get(heat.id) || 0
             })
         })
       return res
@@ -258,7 +259,7 @@ export default {
       const _targetCoords = (link) => {
         const t = this.processedHeats.get(link.to_heat_id)
         return [
-          t.coordinates.targetX + this.heatWidth,
+          t.coordinates.targetX,
           t.coordinates.targetY + this.rowHeight * (0.5 + link.seed)
         ]
       }
@@ -304,8 +305,7 @@ export default {
       this.fetchParticipations()
     ]).then(() => {
       this.initSvg()
-      this.drawHeats()
-      this.positionDraggables()
+      this.draw()
     })
   },
   methods: {
@@ -318,6 +318,14 @@ export default {
         .attr('width', this.width)
         .attr('height', this.width * (this.internalHeight / this.internalWidth) || 0)
         .attr('class', 'heatchart')
+
+      this.d3Heats = this.d3Svg
+        .append('g')
+        .attr('class', 'svg_heats')
+
+      this.d3Links = this.d3Svg
+        .append('g')
+        .attr('class', 'svg_links')
     },
     fetchHeats () {
       return fetch('http://localhost:8081/rest/categories/1/heats')
@@ -339,32 +347,34 @@ export default {
         .then(response => response.json())
         .then(data => { this.participations = data })
     },
-    drawHeats () {
-      this.d3Heats = this.d3Svg
-        .append('g')
-        .attr('class', 'svg_heats')
-
+    draw () {
       // TODO: focus heat elem
+      this.genD3GroupSelections()
       this.genD3GroupEnters()
+      this.genD3GroupExits()
+
       this.genHeatBoxes()
       this.genHeatSeeds()
       this.genHeatPlaces()
+      this.genLinkPaths()
     },
-    drawLinks () {},
-    positionDraggables () {
-      this.d3Heats
-        .selectAll('.heat_node')
-        .attr('transform', (d) => `translate(${d.coordinates.x + d.dragX}, ${d.coordinates.y + d.dragY})`)
 
-      // update ALL seed nodes (enter and existing)
-      this.d3Heats
-        .selectAll('.heat_seed')
-        .attr('transform', (d) => `translate(${d.x + d.dragX} ${d.y + d.dragY})`)
-    },
-    genD3GroupEnters () {
+    genD3GroupSelections () {
       const heats = this.d3Heats
         .selectAll('.heat_node')
         .data(Array.from(this.processedHeats.values()), (d) => d.id)
+
+      const links = this.d3Links
+        .selectAll('.link')
+        .data(Array.from(this.processedAdvancements.values()))
+
+      this.d3GroupSelections = {
+        heats,
+        links
+      }
+    },
+    genD3GroupEnters () {
+      const heats = this.d3GroupSelections.heats
         .enter()
         .append('g')
         .attr('class', 'heat_node')
@@ -373,6 +383,7 @@ export default {
           heatNode.dragX = 0
           heatNode.dragY = 0
         })
+        .attr('transform', (d) => `translate(${d.coordinates.x + d.dragX}, ${d.coordinates.y + d.dragY})`)
 
       const seeds = heats
         .selectAll('.heat_seed')
@@ -387,13 +398,14 @@ export default {
         )
         .enter()
         .append('g')
+        .attr('class', (d) => d.participant ? 'heat_seed with_participant' : 'heat_seed')
         .each((seedNode) => {
           // initialize new seed groups with correct position
           // these might be changed later upon drag
           seedNode.dragX = 0
           seedNode.dragY = 0
         })
-        .attr('class', (d) => d.participant ? 'heat_seed with_participant' : 'heat_seed')
+        .attr('transform', (d) => `translate(${d.x + d.dragX} ${d.y + d.dragY})`)
 
       const scoreWidth = this.showTotalScores ? this.scoreWidthFactor * this.heatWidth : 0
       const places = heats
@@ -424,11 +436,29 @@ export default {
         })
         .attr('transform', (d) => `translate(${(1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth} ${d.place * this.rowHeight})`)
 
+      const links = this.d3GroupSelections.links
+        .enter()
+        .append('path')
+        .attr('class', 'link')
+        .each(function (d) {
+          d.svg = this // this points to the svg path element (thus not using arrow notation)
+        })
+
       this.d3GroupEnters = {
         heats,
         seeds,
-        places
+        places,
+        links
       }
+    },
+    genD3GroupExits () {
+      this.d3GroupSelections.heats
+        .exit()
+        .remove()
+
+      this.d3GroupSelections.links
+        .exit()
+        .remove()
     },
     genHeatBoxes () {
       this.d3GroupEnters.heats
@@ -504,12 +534,29 @@ export default {
             return `${d.place + 1}. place`
           }
         })
+    },
+    genLinkPaths () {
+      this.d3GroupEnters.links
+        .attr('d', (link) => this.linkPath(link.sourceCoordinates, link.targetCoordinates))
+    },
+    linkPath (p0, p1) {
+      const curvature = 0.5
+      const xi = d3.interpolateNumber(p0[0], p1[0])
+      const x2 = xi(curvature)
+      const x3 = xi(1 - curvature)
+      return 'M' + p0[0] + ',' + p0[1] +
+             'C' + x2 + ',' + p0[1] +
+             ' ' + x3 + ',' + p1[1] +
+             ' ' + p1[0] + ',' + p1[1]
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+
+div
+  overflow auto
 
 // heat boxes
 div >>> .heat_node > rect
@@ -539,4 +586,8 @@ div >>> .heat_place > text
   text-anchor middle
   alignment-baseline middle
 
+div >>> .link
+  fill none
+  stroke #cccccc
+  stroke-width 1px
 </style>
