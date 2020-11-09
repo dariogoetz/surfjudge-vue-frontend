@@ -1,7 +1,9 @@
 <template>
   <div>
     <span>Heatcharts</span>
-    <heatchart />
+    <heatchart
+      :category-id="1"
+    />
   </div>
 </template>
 

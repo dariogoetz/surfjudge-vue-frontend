@@ -9,7 +9,7 @@ import { lighten } from '../utils/lighten_darken_color'
 
 export default {
   props: {
-    category: { type: Object, default: null },
+    categoryId: { type: Number, required: true },
 
     showIndividualScores: { type: Boolean, default: false },
     showTotalScores: { type: Boolean, default: false },
@@ -46,6 +46,18 @@ export default {
     }
   },
   computed: {
+    heatsUrl () {
+      return `http://localhost:8081/rest/categories/${this.categoryId}/heats`
+    },
+    advancementsUrl () {
+      return `http://localhost:8081/rest/categories/${this.categoryId}/advancements`
+    },
+    resultsUrl () {
+      return `http://localhost:8081/rest/categories/${this.categoryId}/results`
+    },
+    participationsUrl () {
+      return `http://localhost:8081/rest/categories/${this.categoryId}/participations`
+    },
     width () {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
       else return Math.floor(Math.min(this.targetWidth, this.scalingFactor * this.internalWidth)) - 5
@@ -328,22 +340,22 @@ export default {
         .attr('class', 'svg_links')
     },
     fetchHeats () {
-      return fetch('http://localhost:8081/rest/categories/1/heats')
+      return fetch(this.heatsUrl)
         .then(response => response.json())
         .then(data => { this.heats = data })
     },
     fetchAdvancements () {
-      return fetch('http://localhost:8081/rest/categories/1/advancements')
+      return fetch(this.advancementsUrl)
         .then(response => response.json())
         .then(data => { this.advancements = data })
     },
     fetchResults () {
-      return fetch('http://localhost:8081/rest/categories/1/results')
+      return fetch(this.resultsUrl)
         .then(response => response.json())
         .then(data => { this.results = data })
     },
     fetchParticipations () {
-      return fetch('http://localhost:8081/rest/categories/1/participations')
+      return fetch(this.participationsUrl)
         .then(response => response.json())
         .then(data => { this.participations = data })
     },
