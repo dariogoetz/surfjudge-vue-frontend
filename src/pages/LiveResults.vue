@@ -12,9 +12,7 @@
           {{ heat.name }}
         </template>
         <result-table
-          :results-url="results_url(heat.id)"
-          :heat-url="heat_url(heat.id)"
-          :participations-url="participations_url(heat.id)"
+          :heat-id="heat.id"
         />
       </b-card>
     </b-container>
@@ -53,15 +51,6 @@ export default {
     this.refresh()
   },
   methods: {
-    results_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/results`
-    },
-    heat_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}`
-    },
-    participations_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/participations`
-    },
     refresh () {
       if (this.tournament === null) return
       fetch(this.active_heats_url)

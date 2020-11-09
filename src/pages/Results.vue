@@ -15,8 +15,8 @@
         class="mb-sm-3"
       >
         <b-col
-          v-for="h in round_heats"
-          :key="h.id"
+          v-for="heat in round_heats"
+          :key="heat.id"
           class="mb-sm-3"
         >
           <b-card
@@ -25,12 +25,10 @@
             header-text-variant="white"
           >
             <template #header>
-              {{ h.name }}
+              {{ heat.name }}
             </template>
             <result-table
-              :results-url="results_url(h.id)"
-              :heat-url="heat_url(h.id)"
-              :participations-url="participations_url(h.id)"
+              :heat-id="heat.id"
             />
           </b-card>
         </b-col>
@@ -103,18 +101,6 @@ export default {
     select_category (category) {
       this.category = category
       this.fetch_heats()
-    },
-    results_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/results`
-      // return heatId === null ? null : `https://www.surfjudge.de/rest/results/${heatId}`
-    },
-    heat_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}`
-      // return heatId === null ? null : `https://www.surfjudge.de/rest/heats/${heatId}`
-    },
-    participations_url (heatId) {
-      return heatId === null ? null : `http://localhost:8081/rest/heats/${heatId}/participations`
-      // return heatId === null ? null : `https://www.surfjudge.de/rest/participants/${heatId}`
     },
     fetch_heats (category) {
       fetch(this.category_heats_url)

@@ -18,22 +18,8 @@ import { lighten } from '../utils/lighten_darken_color'
 
 export default {
   props: {
-    resultsUrl: {
-      type: String,
-      default: null
-    },
-    heatUrl: {
-      type: String,
-      default: null
-    },
-    participationsUrl: {
-      type: String,
-      default: null
-    },
-    decimals: {
-      type: Number,
-      default: 2
-    }
+    heatId: { type: Number, required: true },
+    decimals: { type: Number, default: 2 }
   },
   data () {
     return {
@@ -43,6 +29,18 @@ export default {
     }
   },
   computed: {
+    resultsUrl () {
+      return `http://localhost:8081/rest/heats/${this.heatId}/results`
+      // return https://www.surfjudge.de/rest/results/${this.heatId}`
+    },
+    heatUrl () {
+      return `http://localhost:8081/rest/heats/${this.heatId}`
+      // return `https://www.surfjudge.de/rest/heats/${this.heatId}`
+    },
+    participationsUrl () {
+      return `http://localhost:8081/rest/heats/${this.heatId}/participations`
+      // return `https://www.surfjudge.de/rest/participants/${this.heatId}`
+    },
     fields () {
       if (this.results === null) return []
       if (this.participations === null) return []
@@ -146,19 +144,16 @@ export default {
   },
   methods: {
     fetch_results () {
-      if (this.resultsUrl === null) return
       return fetch(this.resultsUrl)
         .then(response => response.json())
         .then(data => { this.results = data })
     },
     fetch_heat () {
-      if (this.heatsUrl === null) return
       return fetch(this.heatUrl)
         .then(response => response.json())
         .then(data => { this.heat = data })
     },
     fetch_participations () {
-      if (this.participationsUrl === null) return
       return fetch(this.participationsUrl)
         .then(response => response.json())
         .then(data => { this.participations = data })
