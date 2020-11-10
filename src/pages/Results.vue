@@ -2,13 +2,13 @@
   <div>
     <b-container>
       <dropdown-menu
-        :url="categories_url"
+        :url="categoriesUrl"
         default-label="Select Category"
         select-first
         @selected="select_category"
       />
       <b-row
-        v-for="[round, round_heats] in heats_by_round"
+        v-for="[round, round_heats] in heatsByRound"
         :key="round[0]"
         cols-md="1"
         cols-xl="1"
@@ -29,6 +29,7 @@
             </template>
             <result-table
               :heat-id="heat.id"
+              :initial-data="combined.get(heat.id)"
             />
           </b-card>
         </b-col>
@@ -55,30 +56,36 @@ export default {
   data () {
     return {
       category: null,
-      heats: []
+      heats: new Map(),
+      results: new Map(),
+      participations: new Map(),
+      combined: new Map()
     }
   },
   computed: {
-    tournaments_url () {
-      return 'http://localhost:8081/rest/tournaments'
-      // return 'https://www.surfjudge.de/rest/tournaments'
-    },
-    categories_url () {
+    categoriesUrl () {
       return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
       // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     },
-    category_heats_url () {
+    categoryHeatsUrl () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/heats`
       // return this.category === null ? null : `https://www.surfjudge.de/rest/heats?category_id=${this.category.id}`
     },
-    heats_by_round () {
+    categoryResultsUrl () {
+      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/results`
+    },
+    categoryParticipationsUrl () {
+      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/participations`
+    },
+
+    heatsByRound () {
       const r2h = new Map()
-      this.heats.forEach(heat => {
-        // TODO: check if no participants
-        if (!r2h.has(heat.round)) {
-          r2h.set(heat.round, [])
+      this.combined.forEach((d) => {
+        // TODO: check if no participants and exclude in that case
+        if (!r2h.has(d.heat.round)) {
+          r2h.set(d.heat.round, [])
         }
-        r2h.get(heat.round).push(heat)
+        r2h.get(d.heat.round).push(d.heat)
       })
       // sort heats in each round
       r2h.forEach((heats, round) => {
@@ -88,7 +95,6 @@ export default {
       // map into sorted list of round and heats
       const roundsHeats = Array.from(r2h)
       roundsHeats.sort((a, b) => a[0] - b[0])
-
       return roundsHeats
     }
   },
@@ -100,12 +106,53 @@ export default {
   methods: {
     select_category (category) {
       this.category = category
-      this.fetch_heats()
+      Promise.all([
+        this.fetchHeats(),
+        this.fetchParticipations(),
+        this.fetchResults()
+      ]).then(() => {
+        const comb = new Map()
+        this.heats.forEach((heat) => {
+          comb.set(heat.id, {
+            heat,
+            participations: this.participations.get(heat.id),
+            results: this.results.get(heat.id)
+          })
+        })
+        this.combined = comb
+      })
     },
-    fetch_heats (category) {
-      fetch(this.category_heats_url)
+    fetchHeats (category) {
+      return fetch(this.categoryHeatsUrl)
         .then(response => response.json())
-        .then(data => { this.heats = data })
+        .then(data => {
+          this.heats = data.reduce(function (m, d) {
+            m.set(d.id, d)
+            return m
+          }, new Map())
+        })
+    },
+    fetchResults (category) {
+      return fetch(this.categoryResultsUrl)
+        .then(response => response.json())
+        .then(data => {
+          this.results = new Map()
+          data.forEach((d) => {
+            if (!this.results.has(d.heat_id)) this.results.set(d.heat_id, [])
+            this.results.get(d.heat_id).push(d)
+          })
+        })
+    },
+    fetchParticipations (category) {
+      return fetch(this.categoryParticipationsUrl)
+        .then(response => response.json())
+        .then(data => {
+          this.participations = new Map()
+          data.forEach((d) => {
+            if (!this.participations.has(d.heat_id)) this.participations.set(d.heat_id, [])
+            this.participations.get(d.heat_id).push(d)
+          })
+        })
     }
   }
 }

@@ -19,7 +19,8 @@ import { lighten } from '../utils/lighten_darken_color'
 export default {
   props: {
     heatId: { type: Number, required: true },
-    decimals: { type: Number, default: 2 }
+    decimals: { type: Number, default: 2 },
+    initialData: { type: Object, default: null }
   },
   data () {
     return {
@@ -135,25 +136,36 @@ export default {
       return this.decimals
     }
   },
+  watch: {
+    initialData (val) {
+      if (val.heat) this.heat = val.heat
+      if (val.results) this.results = val.results
+      if (val.participations) this.participations = val.participations
+    }
+  },
   created () {
-    Promise.all([
-      this.fetch_results(),
-      this.fetch_heat(),
-      this.fetch_participations()
-    ])
+    if (this.initialData === null) {
+      this.fetchResults()
+      this.fetchParticipations()
+      this.fetchHeat()
+    } else {
+      this.results = this.initialData.results || []
+      this.heat = this.initialData.heat || {}
+      this.participations = this.initialData.participations || []
+    }
   },
   methods: {
-    fetch_results () {
+    fetchResults () {
       return fetch(this.resultsUrl)
         .then(response => response.json())
         .then(data => { this.results = data })
     },
-    fetch_heat () {
+    fetchHeat () {
       return fetch(this.heatUrl)
         .then(response => response.json())
         .then(data => { this.heat = data })
     },
-    fetch_participations () {
+    fetchParticipations () {
       return fetch(this.participationsUrl)
         .then(response => response.json())
         .then(data => { this.participations = data })
