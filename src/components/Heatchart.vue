@@ -1,5 +1,5 @@
 <template>
-  <div id="heatchart" />
+  <div />
 </template>
 
 <script>
@@ -218,7 +218,7 @@ export default {
           this.roundHeats.get(round)
             .sort((a, b) => a.number_in_round - b.number_in_round)
             .forEach((heat, heatIdx) => {
-              const x = this.addSymbolOffset + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth)
+              const x = this.addSymbolOffset + this.heatHorizontalSpacing + (nRounds - roundIdx - 1) * (this.heatHorizontalSpacing + this.heatWidth)
               const y = heatIdx * verticalPadding + rows * this.rowHeight + verticalPadding
               res.set(heat.id, {
                 roundIndex: roundIdx,
@@ -283,31 +283,31 @@ export default {
         res.push(link)
       })
       return res
-    },
-    processedToAdvancementsMap () {
-      console.debug('compute processedToAdvancementsMap')
-      const res = new Map()
-      this.processedAdvancements.forEach((adv) => {
-        if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
-        res.get(adv.to_heat_id).push(adv)
-      })
-      res.forEach((advs) => advs.sort(
-        (a, b) => a.seed - b.seed
-      ))
-      return res
-    },
-    processedFromAdvancementsMap () {
-      console.debug('compute processedFromAdvancementsMap')
-      const res = new Map()
-      this.processedAdvancements.forEach((adv) => {
-        if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
-        res.get(adv.from_heat_id).push(adv)
-      })
-      res.forEach((advs) => advs.sort(
-        (a, b) => a.seed - b.seed
-      ))
-      return res
-    }
+    } // ,
+    // processedToAdvancementsMap () {
+    //   console.debug('compute processedToAdvancementsMap')
+    //   const res = new Map()
+    //   this.processedAdvancements.forEach((adv) => {
+    //     if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
+    //     res.get(adv.to_heat_id).push(adv)
+    //   })
+    //   res.forEach((advs) => advs.sort(
+    //     (a, b) => a.seed - b.seed
+    //   ))
+    //   return res
+    // },
+    // processedFromAdvancementsMap () {
+    //   console.debug('compute processedFromAdvancementsMap')
+    //   const res = new Map()
+    //   this.processedAdvancements.forEach((adv) => {
+    //     if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
+    //     res.get(adv.from_heat_id).push(adv)
+    //   })
+    //   res.forEach((advs) => advs.sort(
+    //     (a, b) => a.seed - b.seed
+    //   ))
+    //   return res
+    // }
   },
   mounted () {
     Promise.all([
@@ -323,7 +323,7 @@ export default {
   methods: {
     initSvg () {
       this.d3Svg = d3
-        .select('#heatchart')
+        .select(this.$el)
         .append('svg')
         .attr('viewBox', this.viewBox)
         .attr('preserveAspectRatio', 'xMinYMin meet')
@@ -576,6 +576,9 @@ div >>> .heat_node > rect
 
 div >>> .heat_node text
   font 10px sans-serif
+
+div >>> .heat_node text.title
+  font-weight bold
 
 // participant names
 div >>> .heat_seed > text

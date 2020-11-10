@@ -2,7 +2,7 @@
   <div>
     <b-container>
       <b-card
-        v-for="heat in active_heats"
+        v-for="heat in activeHeats"
         :key="heat.id"
         no-body
         header-bg-variant="secondary"
@@ -34,11 +34,11 @@ export default {
   },
   data () {
     return {
-      active_heats: []
+      activeHeats: []
     }
   },
   computed: {
-    active_heats_url () {
+    activeHeatsUrl () {
       return this.tournament === null ? null : `http://localhost:8081/rest/active_heats/${this.tournament.id}`
     }
   },
@@ -53,9 +53,9 @@ export default {
   methods: {
     refresh () {
       if (this.tournament === null) return
-      fetch(this.active_heats_url)
+      fetch(this.activeHeatsUrl)
         .then((response) => response.json())
-        .then((data) => { this.active_heats = data })
+        .then((data) => { this.activeHeats = data })
     }
   }
 }
