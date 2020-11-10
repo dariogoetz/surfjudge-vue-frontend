@@ -48,10 +48,7 @@ export default {
     ResultTable
   },
   props: {
-    tournament: {
-      type: Object,
-      default: null
-    }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
@@ -107,6 +104,7 @@ export default {
     select_category (category) {
       this.category = category
       Promise.all([
+        // fetch data for all heats in category once and distribute data directly
         this.fetchHeats(),
         this.fetchParticipations(),
         this.fetchResults()

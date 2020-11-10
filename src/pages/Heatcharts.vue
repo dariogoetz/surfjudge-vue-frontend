@@ -28,10 +28,7 @@ export default {
     Heatchart
   },
   props: {
-    tournament: {
-      type: Object,
-      default: null
-    }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
