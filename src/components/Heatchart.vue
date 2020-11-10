@@ -512,7 +512,7 @@ export default {
       this.d3GroupEnters.seeds
         .append('text')
         .attr('x', 0.5 * seedWidth)
-        .attr('y', this.rowHeight * 1.95 / 3)
+        .attr('y', this.rowHeight * 2.2 / 3)
         .text((d) => {
           if (d.participant && d.participant.surfer) {
             const s = d.participant.surfer
@@ -534,7 +534,7 @@ export default {
       this.d3GroupEnters.places
         .append('text')
         .attr('x', 0.5 * placeWidth)
-        .attr('y', rowHeight * 1.95 / 3)
+        .attr('y', rowHeight * 2.2 / 3)
         .text((d) => {
           const result = (d.node.results || []).find((r) => r.place === d.place)
           // only show placings for not active heats (for an active heat, the placing is not fixed)
