@@ -412,8 +412,10 @@ export default {
             node: d,
             seed,
             participant: d.participations.find((p) => p.seed === seed) || null,
-            x: 0,
-            y: seed * this.rowHeight
+            coordinates: {
+              x: 0,
+              y: seed * this.rowHeight
+            }
           }))
         )
         .enter()
@@ -425,7 +427,7 @@ export default {
           seedNode.dragX = 0
           seedNode.dragY = 0
         })
-        .attr('transform', (d) => `translate(${d.x + d.dragX} ${d.y + d.dragY})`)
+        .attr('transform', (d) => `translate(${d.coordinates.x + d.dragX} ${d.coordinates.y + d.dragY})`)
 
       const scoreWidth = this.showTotalScores ? this.scoreWidthFactor * this.heatWidth : 0
       const places = heats
@@ -433,6 +435,10 @@ export default {
         .data((d) => d3.range(d.nParticipants)
           .map((place) => ({
             node: d,
+            coordinates: {
+              x: (1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth,
+              y: place * this.rowHeight
+            },
             result: (d.results || []).find((r) => r.place === place) || null,
             place
           }))
@@ -455,7 +461,7 @@ export default {
               return 'heat_place'
           }
         })
-        .attr('transform', (d) => `translate(${(1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth} ${d.place * this.rowHeight})`)
+        .attr('transform', (d) => `translate(${d.coordinates.x} ${d.coordinates.y})`)
 
       const links = this.d3GroupSelections.links
         .enter()
