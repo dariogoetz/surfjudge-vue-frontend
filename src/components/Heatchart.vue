@@ -410,12 +410,12 @@ export default {
         .data((d) => d3.range(d.nParticipants)
           .map((seed) => ({
             node: d,
-            seed,
-            participant: d.participations.find((p) => p.seed === seed) || null,
             coordinates: {
               x: 0,
               y: seed * this.rowHeight
-            }
+            },
+            participant: d.participations.find((p) => p.seed === seed) || null,
+            seed
           }))
         )
         .enter()
