@@ -11,8 +11,8 @@ export default {
   props: {
     categoryId: { type: Number, required: true },
 
-    showIndividualScores: { type: Boolean, default: false },
-    showTotalScores: { type: Boolean, default: false },
+    showIndividualScores: { type: Boolean, default: true },
+    showTotalScores: { type: Boolean, default: true },
 
     targetWidth: { type: Number, default: null },
     scalingFactor: { type: Number, default: 1.25 },
@@ -21,10 +21,10 @@ export default {
     marginLeft: { type: Number, default: 0 },
     marginRight: { type: Number, default: 0 },
 
-    heatWidth: { type: Number, default: 280 },
+    baseHeatWidth: { type: Number, default: 280 },
     heatMinVerticalSpacing: { type: Number, default: 50 },
     heatHorizontalSpacing: { type: Number, default: 100 },
-    rowHeight: { type: Number, default: 18 },
+    baseRowHeight: { type: Number, default: 18 },
     seedWidthFactor: { type: Number, default: 0.475 },
     placeWidthFactor: { type: Number, default: 0.475 },
     scoreWidthFactor: { type: Number, default: 0.1 },
@@ -61,6 +61,15 @@ export default {
     width () {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
       else return Math.floor(Math.min(this.targetWidth, this.scalingFactor * this.internalWidth)) - 5
+    },
+    height () {
+      return this.width * (this.internalHeight / this.internalWidth) || 0
+    },
+    rowHeight () {
+      return this.showIndividualScores ? 2 * this.baseRowHeight : this.baseRowHeight
+    },
+    heatWidth () {
+      return this.showTotalScores ? 40 + this.baseHeatWidth : this.baseHeatWidth
     },
     internalWidth () {
       console.debug('compute internalWidth')
@@ -328,7 +337,7 @@ export default {
         .attr('viewBox', this.viewBox)
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .attr('width', this.width)
-        .attr('height', this.width * (this.internalHeight / this.internalWidth) || 0)
+        .attr('height', this.height)
         .attr('class', 'heatchart')
 
       this.d3Heats = this.d3Svg
@@ -370,7 +379,6 @@ export default {
       this.genHeatPlaces()
       this.genLinkPaths()
     },
-
     genD3GroupSelections () {
       const heats = this.d3Heats
         .selectAll('.heat_node')
@@ -425,6 +433,7 @@ export default {
         .data((d) => d3.range(d.nParticipants)
           .map((place) => ({
             node: d,
+            result: (d.results || []).find((r) => r.place === place) || null,
             place
           }))
         )
@@ -512,7 +521,7 @@ export default {
       this.d3GroupEnters.seeds
         .append('text')
         .attr('x', 0.5 * seedWidth)
-        .attr('y', this.rowHeight * 2.2 / 3)
+        .attr('y', this.rowHeight * 2.0 / 3)
         .text((d) => {
           if (d.participant && d.participant.surfer) {
             const s = d.participant.surfer
@@ -534,18 +543,96 @@ export default {
       this.d3GroupEnters.places
         .append('text')
         .attr('x', 0.5 * placeWidth)
-        .attr('y', rowHeight * 2.2 / 3)
+        .attr('y', rowHeight * 2.0 / 3)
         .text((d) => {
-          const result = (d.node.results || []).find((r) => r.place === d.place)
           // only show placings for not active heats (for an active heat, the placing is not fixed)
           const showPlacing = true // TODO: false if this is a focus heat
-          if (result && showPlacing) {
-            const s = result.surfer
+          if (d.result && showPlacing) {
+            const s = d.result.surfer
             return `${s.first_name} ${s.last_name}`
           } else {
             return `${d.place + 1}. place`
           }
         })
+
+      if (this.showTotalScores) {
+        const scoreWidth = this.scoreWidthFactor * this.heatWidth
+        const totalScoreGroup = this.d3GroupEnters.places
+          .append('g')
+          .attr('class', 'total_score')
+
+        totalScoreGroup
+          .append('rect')
+          .attr('width', scoreWidth)
+          .attr('height', this.rowHeight)
+          .attr('x', placeWidth)
+
+        totalScoreGroup
+          .append('text')
+          .attr('x', placeWidth + 0.5 * scoreWidth)
+          .attr('y', this.rowHeight * 2.0 / 3)
+          .text((d) => {
+            let label = ''
+            // only show placings for not active heats (for an active heat, the placing is not fixed)
+            const showPlacing = true // _this.focus_heat_ids == null || typeof _this.focus_heat_ids === 'undefined' || _this.focus_heat_ids.indexOf(heat_id) < 0;
+            if (d.result && showPlacing) {
+              label = '' + d.result.total_score.toFixed(1)
+            }
+            return label
+          })
+      }
+
+      if (this.showIndividualScores) {
+        // individual scores
+        const scoreGroup = this.d3GroupEnters.places
+          .selectAll('.score')
+          .data((d) => {
+            // store the order of each wave score
+            const waveScores = ((d.result || {}).wave_scores || [])
+              .slice()
+              .sort((a, b) => b.score - a.score)
+
+            waveScores.forEach((w, i) => {
+              w.scoreOrder = i
+              w.width = placeWidth / d.node.number_of_waves
+              w.heatId = d.node.heatId
+            })
+            return waveScores.sort((a, b) => b.wave - a.wave)
+          })
+          .enter()
+          .append('g')
+          .attr('class', 'score')
+          .attr('transform', (d, i) => `translate(${i * d.width} ${rowHeight})`)
+
+        scoreGroup
+          .append('rect')
+          .attr('width', (d) => d.width)
+          .attr('height', rowHeight)
+
+        scoreGroup
+          .append('text')
+          .attr('x', (d) => 0.5 * d.width)
+          .attr('y', rowHeight * 2.0 / 3)
+          .attr('class', (d) => {
+            if (d.scoreOrder < 2) {
+              return 'best_score'
+            } else {
+              return ''
+            }
+          })
+          .text((d) => {
+            var showPlacing = true // _this.focus_heat_ids == null || typeof _this.focus_heat_ids === 'undefined' || _this.focus_heat_ids.indexOf(d["heat_id"]) < 0;
+            if (showPlacing) {
+              return d.score.toFixed(1)
+              // var val = d.score
+              // if ('score' in d)
+              //   val = val.toFixed(1)
+              // else
+              //   val = ''
+              // return val;
+            }
+          })
+      }
     },
     genLinkPaths () {
       this.d3GroupEnters.links
@@ -581,25 +668,43 @@ div >>> .heat_node text.title
   font-weight bold
 
 // participant names
-div >>> .heat_seed > text
+div >>> .heat_seed text
   text-anchor middle
   alignment-baseline middle
 
-div >>> .heat_place > rect
+div >>> .heat_place rect
   fill white
 
-div >>> .heat_place.first > rect
+div >>> .heat_place.first rect
   fill gold
 
-div >>> .heat_place.second > rect
+div >>> .heat_place.second rect
   fill silver
 
-div >>> .heat_place.third > rect
+div >>> .heat_place.third rect
   fill #cd7f32
 
-div >>> .heat_place > text
+div >>> .heat_place text
   text-anchor middle
   alignment-baseline middle
+
+div >>> .heat_place > .score > rect
+  stroke-width 1px
+  stroke #cccccc
+
+div >>> .heat_place > .score > text
+    font-size 8px
+    font-stretch ultra-condensed
+
+div >>> .heat_place > .total_score > rect
+  stroke-width 1px
+  stroke #cccccc
+
+div >>> .heat_place > .total_score > text
+  font-weight bold
+
+div >>> .heat_place > .score > text.best_score
+  font-weight bold
 
 div >>> .link
   fill none
