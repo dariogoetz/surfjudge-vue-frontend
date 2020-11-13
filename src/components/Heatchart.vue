@@ -398,7 +398,7 @@ export default {
         .enter()
         .append('g')
         .attr('class', 'heat_node')
-        .attr('data-heatid', (node) => node.id)
+        .attr('data-heatid', (heat) => heat.id)
         .each((heatNode) => {
           heatNode.dragX = 0
           heatNode.dragY = 0
@@ -409,7 +409,7 @@ export default {
         .selectAll('.heat_seed')
         .data((d) => d3.range(d.nParticipants)
           .map((seed) => ({
-            node: d,
+            heat: d,
             coordinates: {
               x: 0,
               y: seed * this.rowHeight
@@ -434,7 +434,7 @@ export default {
         .selectAll('.heat_place')
         .data((d) => d3.range(d.nParticipants)
           .map((place) => ({
-            node: d,
+            heat: d,
             coordinates: {
               x: (1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth,
               y: place * this.rowHeight
@@ -446,7 +446,7 @@ export default {
         .enter()
         .append('g')
         .attr('class', (d) => {
-          const result = (d.node.results || [])[d.place] || {}
+          const result = (d.heat.results || [])[d.place] || {}
           let place = d.place
           const showPlacing = true // TODO: false if this is a focus heat
           if (showPlacing && result.place) place = result.place // multiple surfers may have the same place
@@ -491,18 +491,18 @@ export default {
       this.d3GroupEnters.heats
         .append('rect')
         .attr('width', this.heatWidth)
-        .attr('height', (node) => this.rowHeight * node.nParticipants)
+        .attr('height', (heat) => this.rowHeight * heat.nParticipants)
         .lower() // place on top of group
 
       this.d3GroupEnters.heats
         .append('text')
         .attr('class', 'title')
         .attr('y', -5)
-        .text((node) => {
-          let label = 'name' in node ? node.name : 'heat not available - deleted?'
-          if (this.adminMode) label += `(number ${node.number_in_round + 1})`
-          if (node.start_datetime) {
-            const d = parseISOLocal(node.start_datetime)
+        .text((heat) => {
+          let label = 'name' in heat ? heat.name : 'heat not available - deleted?'
+          if (this.adminMode) label += `(number ${heat.number_in_round + 1})`
+          if (heat.start_datetime) {
+            const d = parseISOLocal(heat.start_datetime)
             label += ` (${d.toDateString().slice(0, 3)} ${d.toTimeString().slice(0, 5)})`
           }
           return label
@@ -593,22 +593,39 @@ export default {
         const scoreGroup = this.d3GroupEnters.places
           .selectAll('.score')
           .data((d) => {
+            const width = placeWidth / d.heat.number_of_waves
+
             // store the order of each wave score
             const waveScores = ((d.result || {}).wave_scores || [])
               .slice()
               .sort((a, b) => b.score - a.score)
-
-            waveScores.forEach((w, i) => {
-              w.scoreOrder = i
-              w.width = placeWidth / d.node.number_of_waves
-              w.heatId = d.node.heatId
+            waveScores.forEach((d, i) => {
+              d.scoreOrder = i
+              d.hasVal = true
             })
-            return waveScores.sort((a, b) => b.wave - a.wave)
+            // reorder by wave number
+            waveScores.sort((a, b) => a.wave - b.wave)
+
+            const res = []
+            for (var i = 0; i < d.heat.number_of_waves; i++) {
+              let elem = {
+                width: width,
+                heatId: d.heat.id,
+                coordinates: {
+                  x: i * width,
+                  y: rowHeight
+                },
+                hasVal: false
+              }
+              if (i < waveScores.length) elem = Object.assign(elem, waveScores[i])
+              res.push(elem)
+            }
+            return res
           })
           .enter()
           .append('g')
           .attr('class', 'score')
-          .attr('transform', (d, i) => `translate(${i * d.width} ${rowHeight})`)
+          .attr('transform', (d) => `translate(${d.coordinates.x} ${d.coordinates.y})`)
 
         scoreGroup
           .append('rect')
@@ -629,7 +646,7 @@ export default {
           .text((d) => {
             var showPlacing = true // _this.focus_heat_ids == null || typeof _this.focus_heat_ids === 'undefined' || _this.focus_heat_ids.indexOf(d["heat_id"]) < 0;
             if (showPlacing) {
-              return d.score.toFixed(1)
+              return d.hasVal ? d.score.toFixed(1) : ''
               // var val = d.score
               // if ('score' in d)
               //   val = val.toFixed(1)
