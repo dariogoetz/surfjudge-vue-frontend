@@ -41,6 +41,7 @@
 <script>
 import DropdownMenu from '../components/DropdownMenu.vue'
 import ResultTable from '../components/ResultTable.vue'
+import WebSocketClient from '../utils/websocket_client.js'
 
 export default {
   components: {
@@ -48,15 +49,18 @@ export default {
     ResultTable
   },
   props: {
-    tournament: { type: Object, default: null }
+    tournament: { type: Object, default: null },
+    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
   },
   data () {
     return {
       category: null,
+      heatsByRound: new Map(),
       heats: new Map(),
       results: new Map(),
       participations: new Map(),
-      combined: new Map()
+      combined: new Map(),
+      ws: null
     }
   },
   computed: {
@@ -73,32 +77,28 @@ export default {
     },
     categoryParticipationsUrl () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/participations`
-    },
-
-    heatsByRound () {
-      const r2h = new Map()
-      this.combined.forEach((d) => {
-        // TODO: check if no participants and exclude in that case
-        if (!r2h.has(d.heat.round)) {
-          r2h.set(d.heat.round, [])
-        }
-        r2h.get(d.heat.round).push(d.heat)
-      })
-      // sort heats in each round
-      r2h.forEach((heats, round) => {
-        heats.sort((a, b) => a.number_in_round - b.number_in_round)
-      })
-
-      // map into sorted list of round and heats
-      const roundsHeats = Array.from(r2h)
-      roundsHeats.sort((a, b) => a[0] - b[0])
-      return roundsHeats
     }
   },
   watch: {
     tournament (val) {
       this.category = null
     }
+  },
+  created () {
+    this.ws = new WebSocketClient({
+      url: this.websocketUrl,
+      channels: {
+        results: (jsonMsg) => {
+          const msg = JSON.parse(jsonMsg)
+          if (!('heat_id' in msg)) return
+          const heatId = parseInt(msg.heat_id)
+          if (this.heats.get(heatId)) {
+            this.fetchResultsForHeat(heatId)
+          }
+        }
+      },
+      name: 'ResultsTable'
+    })
   },
   methods: {
     select_category (category) {
@@ -118,7 +118,11 @@ export default {
           })
         })
         this.combined = comb
+        this.computeHeatsByRound()
       })
+    },
+    heatResultsUrl (heatId) {
+      return `http://localhost:8081/rest/heats/${heatId}/results`
     },
     fetchHeats (category) {
       return fetch(this.categoryHeatsUrl)
@@ -141,6 +145,13 @@ export default {
           })
         })
     },
+    fetchResultsForHeat (heatId) {
+      return fetch(this.heatResultsUrl(heatId))
+        .then(response => response.json())
+        .then(data => {
+          this.results.set(heatId, data)
+        })
+    },
     fetchParticipations (category) {
       return fetch(this.categoryParticipationsUrl)
         .then(response => response.json())
@@ -151,6 +162,25 @@ export default {
             this.participations.get(d.heat_id).push(d)
           })
         })
+    },
+    computeHeatsByRound () {
+      const r2h = new Map()
+      this.combined.forEach((d) => {
+        // TODO: check if no participants and exclude in that case
+        if (!r2h.has(d.heat.round)) {
+          r2h.set(d.heat.round, [])
+        }
+        r2h.get(d.heat.round).push(d.heat)
+      })
+      // sort heats in each round
+      r2h.forEach((heats, round) => {
+        heats.sort((a, b) => a.number_in_round - b.number_in_round)
+      })
+
+      // map into sorted list of round and heats
+      const roundsHeats = Array.from(r2h)
+      roundsHeats.sort((a, b) => a[0] - b[0])
+      this.heatsByRound = roundsHeats
     }
   }
 }
