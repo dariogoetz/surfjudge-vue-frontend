@@ -8,15 +8,15 @@
         @selected="select_category"
       />
       <b-row
-        v-for="[round, round_heats] in heatsByRound"
+        v-for="[round, round_data] in guiData"
         :key="round[0]"
         cols-md="1"
         cols-xl="1"
         class="mb-sm-3"
       >
         <b-col
-          v-for="heat in round_heats"
-          :key="heat.id"
+          v-for="data in round_data"
+          :key="data.heat.id"
           class="mb-sm-3"
         >
           <b-card
@@ -25,11 +25,11 @@
             header-text-variant="white"
           >
             <template #header>
-              {{ heat.name }}
+              {{ data.heat.name }}
             </template>
             <result-table
-              :heat-id="heat.id"
-              :initial-data="combined.get(heat.id)"
+              :heat-id="data.heat.id"
+              :initial-data="data"
             />
           </b-card>
         </b-col>
@@ -55,10 +55,9 @@ export default {
   data () {
     return {
       category: null,
-      heatsByRound: new Map(),
-      heats: new Map(),
-      results: new Map(),
-      participations: new Map(),
+      heats: null,
+      results: null,
+      participations: null,
       combined: new Map(),
       ws: null
     }
@@ -77,6 +76,25 @@ export default {
     },
     categoryParticipationsUrl () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/participations`
+    },
+    guiData () {
+      const r2h = new Map()
+      this.combined.forEach((d) => {
+        // TODO: check if no participants and exclude in that case
+        if (!r2h.has(d.heat.round)) {
+          r2h.set(d.heat.round, [])
+        }
+        r2h.get(d.heat.round).push(d)
+      })
+      // sort heats in each round
+      r2h.forEach((heats, round) => {
+        heats.sort((a, b) => a.heat.number_in_round - b.heat.number_in_round)
+      })
+
+      // map into sorted list of round and heats
+      const roundsHeats = Array.from(r2h)
+      roundsHeats.sort((a, b) => a[0] - b[0])
+      return roundsHeats
     }
   },
   watch: {
@@ -101,25 +119,28 @@ export default {
     })
   },
   methods: {
+    refresh () {
+      if ((this.results === null) || (this.participations === null) || (this.heats === null)) return
+      const comb = new Map()
+      this.heats.forEach((heat) => {
+        comb.set(heat.id, {
+          heat,
+          participations: this.participations.get(heat.id),
+          results: this.results.get(heat.id)
+        })
+      })
+      this.combined = comb
+    },
     select_category (category) {
       this.category = category
-      Promise.all([
-        // fetch data for all heats in category once and distribute data directly
-        this.fetchHeats(),
-        this.fetchParticipations(),
-        this.fetchResults()
-      ]).then(() => {
-        const comb = new Map()
-        this.heats.forEach((heat) => {
-          comb.set(heat.id, {
-            heat,
-            participations: this.participations.get(heat.id),
-            results: this.results.get(heat.id)
-          })
-        })
-        this.combined = comb
-        this.computeHeatsByRound()
-      })
+      this.heats = null
+      this.results = null
+      this.participations = null
+
+      // fetch data for all heats in category once and distribute data directly
+      this.fetchHeats()
+      this.fetchParticipations()
+      this.fetchResults()
     },
     heatResultsUrl (heatId) {
       return `http://localhost:8081/rest/heats/${heatId}/results`
@@ -132,6 +153,7 @@ export default {
             m.set(d.id, d)
             return m
           }, new Map())
+          this.refresh()
         })
     },
     fetchResults (category) {
@@ -143,6 +165,7 @@ export default {
             if (!this.results.has(d.heat_id)) this.results.set(d.heat_id, [])
             this.results.get(d.heat_id).push(d)
           })
+          this.refresh()
         })
     },
     fetchResultsForHeat (heatId) {
@@ -150,6 +173,7 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.results.set(heatId, data)
+          this.refresh()
         })
     },
     fetchParticipations (category) {
@@ -161,26 +185,8 @@ export default {
             if (!this.participations.has(d.heat_id)) this.participations.set(d.heat_id, [])
             this.participations.get(d.heat_id).push(d)
           })
+          this.refresh()
         })
-    },
-    computeHeatsByRound () {
-      const r2h = new Map()
-      this.combined.forEach((d) => {
-        // TODO: check if no participants and exclude in that case
-        if (!r2h.has(d.heat.round)) {
-          r2h.set(d.heat.round, [])
-        }
-        r2h.get(d.heat.round).push(d.heat)
-      })
-      // sort heats in each round
-      r2h.forEach((heats, round) => {
-        heats.sort((a, b) => a.number_in_round - b.number_in_round)
-      })
-
-      // map into sorted list of round and heats
-      const roundsHeats = Array.from(r2h)
-      roundsHeats.sort((a, b) => a[0] - b[0])
-      this.heatsByRound = roundsHeats
     }
   }
 }
