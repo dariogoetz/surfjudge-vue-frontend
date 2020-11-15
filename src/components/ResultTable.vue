@@ -15,18 +15,21 @@
 
 <script>
 import { lighten } from '../utils/lighten_darken_color'
+import WebSocketClient from '../utils/websocket_client.js'
 
 export default {
   props: {
     heatId: { type: Number, required: true },
     decimals: { type: Number, default: 2 },
-    initialData: { type: Object, default: null }
+    initialData: { type: Object, default: null },
+    websocketUrl: { type: String, default: null }
   },
   data () {
     return {
       results: null,
       heat: null,
-      participations: null
+      participations: null,
+      ws: null
     }
   },
   computed: {
@@ -153,6 +156,23 @@ export default {
       this.heat = this.initialData.heat || {}
       this.participations = this.initialData.participations || []
     }
+
+    if (this.websocketUrl) {
+      this.ws = new WebSocketClient({
+        url: this.websocketUrl,
+        channels: {
+          results: (jsonMsg) => {
+            const msg = JSON.parse(jsonMsg)
+            if (!('heat_id' in msg)) return
+            const heatId = parseInt(msg.heat_id)
+            if (this.heat.id === heatId) {
+              this.fetchResults()
+            }
+          }
+        },
+        name: 'ResultsTable'
+      })
+    }
   },
   methods: {
     fetchResults () {
@@ -190,7 +210,7 @@ export default {
       return res
     },
     annotate_best_waves_call (results) {
-
+      // TODO
     }
   }
 }
