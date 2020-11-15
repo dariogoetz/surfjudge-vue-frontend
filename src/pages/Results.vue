@@ -110,7 +110,7 @@ export default {
           const msg = JSON.parse(jsonMsg)
           if (!('heat_id' in msg)) return
           const heatId = parseInt(msg.heat_id)
-          if (this.heats.get(heatId)) {
+          if (this.heats.has(heatId)) {
             this.fetchResultsForHeat(heatId)
           }
         }
