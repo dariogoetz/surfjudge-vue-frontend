@@ -115,7 +115,7 @@ export default {
           }
         }
       },
-      name: 'ResultsTable'
+      name: 'ResultsPage'
     })
   },
   methods: {
