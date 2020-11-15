@@ -82,13 +82,11 @@ export default {
       return this.showTotalScores ? 40 + this.baseHeatWidth : this.baseHeatWidth
     },
     internalWidth () {
-      console.debug('compute internalWidth')
       const nRounds = Array.from(this.roundHeats.keys()).length
       const res = this.addSymbolOffset + nRounds * (this.heatWidth + this.heatHorizontalSpacing) + this.heatHorizontalSpacing
       return res
     },
     internalHeight () {
-      console.debug('compute internalHeight')
       let res = 0
       this.roundHeats.forEach((heats, round) => {
         heats.forEach((heat) => {
@@ -102,7 +100,6 @@ export default {
       return res
     },
     viewBox () {
-      console.debug('compute viewBox')
       const ext2int = this.internalWidth / (this.width - this.marginLeft - this.marginRight)
       const ul = -this.marginLeft * ext2int
       const ur = -this.marginRight * ext2int
@@ -111,7 +108,6 @@ export default {
       return `${ul} ${ur} ${ll} ${lr}`
     },
     toAdvancementsMap () {
-      console.debug('compute toAdvancementsMap')
       const res = new Map()
       this.combined.advancements.forEach((adv) => {
         if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
@@ -123,7 +119,6 @@ export default {
       return res
     },
     nParticipants () {
-      console.debug('compute nParticipants')
       // map: heat_id -> max(max_seed_in_link, max_seed_participations)
       const res = new Map()
       this.combined.heatsMap.forEach((heat) => {
@@ -146,7 +141,6 @@ export default {
       return res
     },
     roundHeats () {
-      console.debug('compute round2Heats')
       const res = new Map()
       this.combined.heatsMap.forEach((heat) => {
         if (!res.has(heat.round)) res.set(heat.round, [])
@@ -161,7 +155,6 @@ export default {
       return res
     },
     roundRows () {
-      console.debug('compute round2Slots')
       // sum all numbers of participants for heats an each round
       const res = new Map()
       this.roundHeats.forEach((heats, round) => {
@@ -175,7 +168,6 @@ export default {
       return res
     },
     heatCoordinates () {
-      console.debug('compute heatCoordinates')
       const nRounds = Array.from(this.roundHeats.keys()).length
       const res = new Map()
       Array.from(this.roundHeats.keys())
@@ -207,7 +199,6 @@ export default {
       return res
     },
     processedHeats () {
-      console.debug('compute processedHeats')
       // generate an map of heats consisting of
       // id, nParticipants, round, numberInRound
       const res = new Map()
@@ -224,7 +215,6 @@ export default {
       return res
     },
     processedAdvancements () {
-      console.debug('compute processedAdvancements')
       // depends on processedHeats for coordinates
 
       // TODO: detect circles
