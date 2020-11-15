@@ -13,6 +13,7 @@
         </template>
         <result-table
           :heat-id="heat.id"
+          :websocket-url="websocketUrl"
         />
       </b-card>
     </b-container>
@@ -21,17 +22,20 @@
 
 <script>
 import ResultTable from '../components/ResultTable.vue'
+import WebSocketClient from '../utils/websocket_client.js'
 
 export default {
   components: {
     ResultTable
   },
   props: {
-    tournament: { type: Object, default: null }
+    tournament: { type: Object, default: null },
+    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
   },
   data () {
     return {
-      activeHeats: []
+      activeHeats: [],
+      ws: null
     }
   },
   computed: {
@@ -45,6 +49,15 @@ export default {
     }
   },
   created () {
+    this.ws = new WebSocketClient({
+      url: this.websocketUrl,
+      channels: {
+        active_heats: (jsonMsg) => {
+          this.refresh()
+        }
+      },
+      name: 'LiveResultsPage'
+    })
     this.refresh()
   },
   methods: {
