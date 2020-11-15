@@ -6,6 +6,7 @@
 import * as d3 from 'd3'
 import parseISOLocal from '../utils/parse_local_date'
 import { lighten } from '../utils/lighten_darken_color'
+import WebSocketClient from '../utils/websocket_client.js'
 
 export default {
   props: {
@@ -29,20 +30,29 @@ export default {
     placeWidthFactor: { type: Number, default: 0.475 },
     scoreWidthFactor: { type: Number, default: 0.1 },
 
-    addSymbolOffset: { type: Number, default: 0 }
+    addSymbolOffset: { type: Number, default: 0 },
+
+    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
 
   },
   data () {
     return {
-      heats: null, // array
-      advancements: null, // array
-      participations: null, // array
-      results: null,
+      heatsMap: null,
+      advancements: null,
+      participationsMap: null,
+      resultsMap: null,
+      combined: {
+        heatsMap: new Map(),
+        resultsMap: new Map(),
+        participationsMap: new Map(),
+        advancements: []
+      },
       d3Svg: null,
       d3Heats: null,
       d3Links: null,
       d3GroupSelections: {},
-      d3GroupEnters: {}
+      d3GroupEnters: {},
+      ws: null
     }
   },
   computed: {
@@ -100,43 +110,10 @@ export default {
       const lr = this.internalHeight + (this.marginTop + this.marginBottom) * ext2int
       return `${ul} ${ur} ${ll} ${lr}`
     },
-    heatsMap () {
-      console.debug('compute heatsMap')
-      if (this.heats === null) return new Map()
-      const res = new Map()
-      this.heats.forEach((heat) => res.set(heat.id, heat))
-      return res
-    },
-    resultsMap () {
-      console.debug('compute resultsMap')
-      if (this.results === null) return new Map()
-      const res = new Map()
-      this.results.forEach((r) => {
-        if (!res.has(r.heat_id)) res.set(r.heat_id, [])
-        res.get(r.heat_id).push(r)
-      })
-      res.forEach((rs) => rs.sort(
-        (a, b) => a.place - b.place
-      ))
-      return res
-    },
-    participationsMap () {
-      console.debug('compute participationsMap')
-      if (this.participations === null) return new Map()
-      const res = new Map()
-      this.participations.forEach((part) => {
-        if (!res.has(part.heat_id)) res.set(part.heat_id, [])
-        res.get(part.heat_id).push(part)
-      })
-      res.forEach((parts) => parts.sort(
-        (a, b) => a.seed - b.seed
-      ))
-      return res
-    },
     toAdvancementsMap () {
       console.debug('compute toAdvancementsMap')
       const res = new Map()
-      this.advancements.forEach((adv) => {
+      this.combined.advancements.forEach((adv) => {
         if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
         res.get(adv.to_heat_id).push(adv)
       })
@@ -145,33 +122,17 @@ export default {
       ))
       return res
     },
-    fromAdvancementsMap () {
-      console.debug('compute fromAdvancementsMap')
-      const res = new Map()
-      this.advancements.forEach((adv) => {
-        if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
-        res.get(adv.from_heat_id).push(adv)
-      })
-      res.forEach((advs) => advs.sort(
-        (a, b) => a.seed - b.seed
-      ))
-      return res
-    },
     nParticipants () {
-      if (this.heats === null) return new Map()
-      if (this.participations === null) return new Map()
-      if (this.advancements === null) return new Map()
-
       console.debug('compute nParticipants')
       // map: heat_id -> max(max_seed_in_link, max_seed_participations)
       const res = new Map()
-      this.heats.forEach((heat) => {
+      this.combined.heatsMap.forEach((heat) => {
         const advanced = (this.toAdvancementsMap.get(heat.id) || [])
         const maxAdv = Math.max(
           0,
           ...advanced.map((adv) => adv.seed + 1)
         )
-        const part = (this.participationsMap.get(heat.id) || [])
+        const part = (this.combined.participationsMap.get(heat.id) || [])
         const maxPart = Math.max(
           0,
           ...part.map((p) => p.seed + 1)
@@ -186,9 +147,8 @@ export default {
     },
     roundHeats () {
       console.debug('compute round2Heats')
-      if (this.heats === null) return new Map()
       const res = new Map()
-      this.heats.forEach((heat) => {
+      this.combined.heatsMap.forEach((heat) => {
         if (!res.has(heat.round)) res.set(heat.round, [])
         res.get(heat.round).push(heat)
       })
@@ -247,15 +207,14 @@ export default {
       return res
     },
     processedHeats () {
-      if (this.heats === null) return new Map()
       console.debug('compute processedHeats')
       // generate an map of heats consisting of
       // id, nParticipants, round, numberInRound
       const res = new Map()
-      this.heats.forEach((heat) => {
+      this.combined.heatsMap.forEach((heat) => {
         const procHeat = Object.assign({}, heat)
-        procHeat.participations = this.participationsMap.get(heat.id) || []
-        procHeat.results = this.resultsMap.get(heat.id) || []
+        procHeat.participations = this.combined.participationsMap.get(heat.id) || []
+        procHeat.results = this.combined.resultsMap.get(heat.id) || []
         procHeat.nParticipants = this.nParticipants.get(heat.id) || 0
         procHeat.coordinates = this.heatCoordinates.get(heat.id)
         // out- and in-links to be fetched from processedTo/FromAdvancementsMap
@@ -265,7 +224,6 @@ export default {
       return res
     },
     processedAdvancements () {
-      if (this.advancements === null) return []
       console.debug('compute processedAdvancements')
       // depends on processedHeats for coordinates
 
@@ -285,38 +243,14 @@ export default {
         ]
       }
       const res = []
-      this.advancements.forEach((adv) => {
+      this.combined.advancements.forEach((adv) => {
         const link = Object.assign({}, adv)
         link.sourceCoordinates = _sourceCoords(adv)
         link.targetCoordinates = _targetCoords(adv)
         res.push(link)
       })
       return res
-    } // ,
-    // processedToAdvancementsMap () {
-    //   console.debug('compute processedToAdvancementsMap')
-    //   const res = new Map()
-    //   this.processedAdvancements.forEach((adv) => {
-    //     if (!res.has(adv.to_heat_id)) res.set(adv.to_heat_id, [])
-    //     res.get(adv.to_heat_id).push(adv)
-    //   })
-    //   res.forEach((advs) => advs.sort(
-    //     (a, b) => a.seed - b.seed
-    //   ))
-    //   return res
-    // },
-    // processedFromAdvancementsMap () {
-    //   console.debug('compute processedFromAdvancementsMap')
-    //   const res = new Map()
-    //   this.processedAdvancements.forEach((adv) => {
-    //     if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
-    //     res.get(adv.from_heat_id).push(adv)
-    //   })
-    //   res.forEach((advs) => advs.sort(
-    //     (a, b) => a.seed - b.seed
-    //   ))
-    //   return res
-    // }
+    }
   },
   mounted () {
     Promise.all([
@@ -328,9 +262,44 @@ export default {
       this.initSvg()
       this.draw()
     })
+    this.ws = new WebSocketClient({
+      url: this.websocketUrl,
+      channels: {
+        results: (jsonMsg) => {
+          const msg = JSON.parse(jsonMsg)
+          if (!('heat_id' in msg)) return
+          const heatId = parseInt(msg.heat_id)
+          if (this.heatsMap.has(heatId)) {
+            this.fetchResultsForHeat(heatId).then(() => {
+              this.initSvg()
+              this.draw()
+            })
+          }
+        },
+        advancements: () => {
+          this.fetchAdvancements().then(() => {
+            this.initSvg()
+            this.draw()
+          })
+        },
+        participants: (jsonMsg) => {
+          const msg = JSON.parse(jsonMsg)
+          if (!('heat_id' in msg)) return
+          const heatId = parseInt(msg.heat_id)
+          if (this.heatsMap.has(heatId)) {
+            this.fetchParticipants().then(() => {
+              this.initSvg()
+              this.draw()
+            })
+          }
+        }
+      },
+      name: 'HeatChart'
+    })
   },
   methods: {
     initSvg () {
+      if (this.d3Svg !== null) this.d3Svg.remove()
       this.d3Svg = d3
         .select(this.$el)
         .append('svg')
@@ -348,31 +317,83 @@ export default {
         .append('g')
         .attr('class', 'svg_links')
     },
+    refresh () {
+      if ((this.heatsMap === null) || (this.resultsMap === null) || (this.participationsMap === null) || (this.advancements === null)) return
+      this.combined = {
+        heatsMap: this.heatsMap || new Map(),
+        resultsMap: this.resultsMap || new Map(),
+        participationsMap: this.participationsMap || new Map(),
+        advancements: this.advancements || []
+      }
+    },
     fetchHeats () {
       return fetch(this.heatsUrl)
         .then(response => response.json())
-        .then(data => { this.heats = data })
+        .then(data => {
+          const res = new Map()
+          data.forEach((heat) => res.set(heat.id, heat))
+          this.heatsMap = res
+          this.refresh()
+        })
     },
     fetchAdvancements () {
       return fetch(this.advancementsUrl)
         .then(response => response.json())
-        .then(data => { this.advancements = data })
+        .then(data => {
+          this.advancements = data
+          this.refresh()
+        })
     },
     fetchResults () {
       return fetch(this.resultsUrl)
         .then(response => response.json())
-        .then(data => { this.results = data })
+        .then(data => {
+          const res = new Map()
+          data.forEach((r) => {
+            if (!res.has(r.heat_id)) res.set(r.heat_id, [])
+            res.get(r.heat_id).push(r)
+          })
+          res.forEach((rs) => rs.sort(
+            (a, b) => a.place - b.place
+          ))
+          this.resultsMap = res
+          this.refresh()
+        })
     },
     fetchParticipations () {
       return fetch(this.participationsUrl)
         .then(response => response.json())
-        .then(data => { this.participations = data })
+        .then(data => {
+          const res = new Map()
+          data.forEach((part) => {
+            if (!res.has(part.heat_id)) res.set(part.heat_id, [])
+            res.get(part.heat_id).push(part)
+          })
+          res.forEach((parts) => parts.sort(
+            (a, b) => a.seed - b.seed
+          ))
+          this.participationsMap = res
+          this.refresh()
+        })
+    },
+    fetchResultsForHeat (heatId) {
+      return fetch(this.heatResultsUrl(heatId))
+        .then(response => response.json())
+        .then(data => {
+          data.sort(
+            (a, b) => a.place - b.place
+          )
+          this.resultsMap.set(heatId, data)
+          this.refresh()
+        })
+    },
+    heatResultsUrl (heatId) {
+      return `http://localhost:8081/rest/heats/${heatId}/results`
     },
     draw () {
       // TODO: focus heat elem
       this.genD3GroupSelections()
       this.genD3GroupEnters()
-      this.genD3GroupExits()
 
       this.genHeatBoxes()
       this.genHeatSeeds()
@@ -477,15 +498,6 @@ export default {
         places,
         links
       }
-    },
-    genD3GroupExits () {
-      this.d3GroupSelections.heats
-        .exit()
-        .remove()
-
-      this.d3GroupSelections.links
-        .exit()
-        .remove()
     },
     genHeatBoxes () {
       this.d3GroupEnters.heats
