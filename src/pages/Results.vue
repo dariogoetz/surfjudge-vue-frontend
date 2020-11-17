@@ -26,6 +26,11 @@
           >
             <template #header>
               {{ data.heat.name }}
+              <span
+                v-if="data.active"
+                class="badge badge-dark"
+              >live
+              </span>
             </template>
             <result-table
               :heat-id="data.heat.id"
@@ -58,6 +63,7 @@ export default {
       heats: null,
       results: null,
       participations: null,
+      activeHeats: [],
       combined: new Map(),
       ws: null
     }
@@ -76,6 +82,10 @@ export default {
     },
     categoryParticipationsUrl () {
       return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/participations`
+    },
+    categoryActiveHeatsUrl () {
+      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/active_heats`
+      // return this.category === null ? null : `https://www.surfjudge.de/rest/active_heats`
     },
     guiData () {
       const r2h = new Map()
@@ -113,6 +123,9 @@ export default {
           if (this.heats.has(heatId)) {
             this.fetchResultsForHeat(heatId)
           }
+        },
+        active_heats: () => {
+          this.fetchActiveHeats()
         }
       },
       name: 'ResultsPage'
@@ -126,7 +139,8 @@ export default {
         comb.set(heat.id, {
           heat,
           participations: this.participations.get(heat.id),
-          results: this.results.get(heat.id)
+          results: this.results.get(heat.id),
+          active: Boolean(this.activeHeats.find((h) => heat.id === h.id))
         })
       })
       this.combined = comb
@@ -141,11 +155,12 @@ export default {
       this.fetchHeats()
       this.fetchParticipations()
       this.fetchResults()
+      this.fetchActiveHeats()
     },
     heatResultsUrl (heatId) {
       return `http://localhost:8081/rest/heats/${heatId}/results`
     },
-    fetchHeats (category) {
+    fetchHeats () {
       return fetch(this.categoryHeatsUrl)
         .then(response => response.json())
         .then(data => {
@@ -156,7 +171,7 @@ export default {
           this.refresh()
         })
     },
-    fetchResults (category) {
+    fetchResults () {
       return fetch(this.categoryResultsUrl)
         .then(response => response.json())
         .then(data => {
@@ -176,7 +191,7 @@ export default {
           this.refresh()
         })
     },
-    fetchParticipations (category) {
+    fetchParticipations () {
       return fetch(this.categoryParticipationsUrl)
         .then(response => response.json())
         .then(data => {
@@ -185,6 +200,14 @@ export default {
             if (!this.participations.has(d.heat_id)) this.participations.set(d.heat_id, [])
             this.participations.get(d.heat_id).push(d)
           })
+          this.refresh()
+        })
+    },
+    fetchActiveHeats () {
+      return fetch(this.categoryActiveHeatsUrl)
+        .then(response => response.json())
+        .then(data => {
+          this.activeHeats = data
           this.refresh()
         })
     }
