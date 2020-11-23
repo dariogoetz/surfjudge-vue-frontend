@@ -399,6 +399,8 @@ export default {
       this.genHeatSeeds()
       this.genHeatPlaces()
       this.genLinkPaths()
+
+      this.initLinkHover()
     },
     genD3GroupSelections () {
       const heats = this.d3Heats
@@ -682,6 +684,24 @@ export default {
              'C' + x2 + ',' + p0[1] +
              ' ' + x3 + ',' + p1[1] +
              ' ' + p1[0] + ',' + p1[1]
+    },
+    initLinkHover () {
+      this.d3Heats
+        .selectAll('.heat_seed')
+        .on('mouseover', (ev, d) => {
+          // TODO: find correct link svg elem and add class "focus"
+        })
+        .on('mouseout', (ev, d) => {
+          // TODO: find correct link svg elem and remove class "focus"
+        })
+      this.d3Heats
+        .selectAll('.heat_place')
+        .on('mouseover', (ev, d) => {
+          // TODO: find correct link svg elem and add class "focus"
+        })
+        .on('mouseout', (ev, d) => {
+          // TODO: find correct link svg elem and remove class "focus"
+        })
     }
   }
 }
