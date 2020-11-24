@@ -32,7 +32,8 @@ export default {
 
     addSymbolOffset: { type: Number, default: 0 },
 
-    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
+    websocketUrl: { type: String, default: null },
+    apiUrl: { type: String, default: '' }
 
   },
   data () {
@@ -57,16 +58,16 @@ export default {
   },
   computed: {
     heatsUrl () {
-      return `http://localhost:8081/rest/categories/${this.categoryId}/heats`
+      return `${this.apiUrl}/categories/${this.categoryId}/heats`
     },
     advancementsUrl () {
-      return `http://localhost:8081/rest/categories/${this.categoryId}/advancements`
+      return `${this.apiUrl}/categories/${this.categoryId}/advancements`
     },
     resultsUrl () {
-      return `http://localhost:8081/rest/categories/${this.categoryId}/results`
+      return `${this.apiUrl}/categories/${this.categoryId}/results`
     },
     participationsUrl () {
-      return `http://localhost:8081/rest/categories/${this.categoryId}/participations`
+      return `${this.apiUrl}/categories/${this.categoryId}/participations`
     },
     width () {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
@@ -242,6 +243,14 @@ export default {
       return res
     }
   },
+  watch: {
+    websocketUrl () {
+      this.initWebsocket()
+    }
+  },
+  created () {
+    this.initWebSocket()
+  },
   mounted () {
     Promise.all([
       this.fetchHeats(),
@@ -251,40 +260,6 @@ export default {
     ]).then(() => {
       this.initSvg()
       this.draw()
-    })
-    this.ws = new WebSocketClient({
-      url: this.websocketUrl,
-      channels: {
-        results: (jsonMsg) => {
-          const msg = JSON.parse(jsonMsg)
-          if (!('heat_id' in msg)) return
-          const heatId = parseInt(msg.heat_id)
-          if (this.heatsMap.has(heatId)) {
-            this.fetchResultsForHeat(heatId).then(() => {
-              this.initSvg()
-              this.draw()
-            })
-          }
-        },
-        advancements: () => {
-          this.fetchAdvancements().then(() => {
-            this.initSvg()
-            this.draw()
-          })
-        },
-        participants: (jsonMsg) => {
-          const msg = JSON.parse(jsonMsg)
-          if (!('heat_id' in msg)) return
-          const heatId = parseInt(msg.heat_id)
-          if (this.heatsMap.has(heatId)) {
-            this.fetchParticipants().then(() => {
-              this.initSvg()
-              this.draw()
-            })
-          }
-        }
-      },
-      name: 'HeatChart'
     })
   },
   methods: {
@@ -315,6 +290,43 @@ export default {
         participationsMap: this.participationsMap || new Map(),
         advancements: this.advancements || []
       }
+    },
+    initWebSocket () {
+      if (this.websocketUrl === null) return
+      this.ws = new WebSocketClient({
+        url: this.websocketUrl,
+        channels: {
+          results: (jsonMsg) => {
+            const msg = JSON.parse(jsonMsg)
+            if (!('heat_id' in msg)) return
+            const heatId = parseInt(msg.heat_id)
+            if (this.heatsMap.has(heatId)) {
+              this.fetchResultsForHeat(heatId).then(() => {
+                this.initSvg()
+                this.draw()
+              })
+            }
+          },
+          advancements: () => {
+            this.fetchAdvancements().then(() => {
+              this.initSvg()
+              this.draw()
+            })
+          },
+          participants: (jsonMsg) => {
+            const msg = JSON.parse(jsonMsg)
+            if (!('heat_id' in msg)) return
+            const heatId = parseInt(msg.heat_id)
+            if (this.heatsMap.has(heatId)) {
+              this.fetchParticipants().then(() => {
+                this.initSvg()
+                this.draw()
+              })
+            }
+          }
+        },
+        name: 'HeatChart'
+      })
     },
     fetchHeats () {
       return fetch(this.heatsUrl)

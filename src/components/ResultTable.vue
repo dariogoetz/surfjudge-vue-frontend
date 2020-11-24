@@ -22,7 +22,8 @@ export default {
     heatId: { type: Number, required: true },
     decimals: { type: Number, default: 2 },
     initialData: { type: Object, default: null },
-    websocketUrl: { type: String, default: null }
+    websocketUrl: { type: String, default: null },
+    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -34,15 +35,15 @@ export default {
   },
   computed: {
     resultsUrl () {
-      return `http://localhost:8081/rest/heats/${this.heatId}/results`
+      return `${this.apiUrl}/heats/${this.heatId}/results`
       // return https://www.surfjudge.de/rest/results/${this.heatId}`
     },
     heatUrl () {
-      return `http://localhost:8081/rest/heats/${this.heatId}`
+      return `${this.apiUrl}/heats/${this.heatId}`
       // return `https://www.surfjudge.de/rest/heats/${this.heatId}`
     },
     participationsUrl () {
-      return `http://localhost:8081/rest/heats/${this.heatId}/participations`
+      return `${this.apiUrl}/heats/${this.heatId}/participations`
       // return `https://www.surfjudge.de/rest/participants/${this.heatId}`
     },
     fields () {

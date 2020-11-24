@@ -35,6 +35,7 @@
             <result-table
               :heat-id="data.heat.id"
               :initial-data="data"
+              :api-url="apiUrl"
             />
           </b-card>
         </b-col>
@@ -55,7 +56,8 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
+    websocketUrl: { type: String, default: null },
+    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -70,21 +72,21 @@ export default {
   },
   computed: {
     categoriesUrl () {
-      return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
+      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
       // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     },
     categoryHeatsUrl () {
-      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/heats`
+      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/heats`
       // return this.category === null ? null : `https://www.surfjudge.de/rest/heats?category_id=${this.category.id}`
     },
     categoryResultsUrl () {
-      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/results`
+      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/results`
     },
     categoryParticipationsUrl () {
-      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/participations`
+      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/participations`
     },
     categoryActiveHeatsUrl () {
-      return this.category === null ? null : `http://localhost:8081/rest/categories/${this.category.id}/active_heats`
+      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/active_heats`
       // return this.category === null ? null : `https://www.surfjudge.de/rest/active_heats`
     },
     guiData () {
@@ -110,26 +112,13 @@ export default {
   watch: {
     tournament (val) {
       this.category = null
+    },
+    websocketUrl () {
+      this.initWebsocket()
     }
   },
   created () {
-    this.ws = new WebSocketClient({
-      url: this.websocketUrl,
-      channels: {
-        results: (jsonMsg) => {
-          const msg = JSON.parse(jsonMsg)
-          if (!('heat_id' in msg)) return
-          const heatId = parseInt(msg.heat_id)
-          if (this.heats.has(heatId)) {
-            this.fetchResultsForHeat(heatId)
-          }
-        },
-        active_heats: () => {
-          this.fetchActiveHeats()
-        }
-      },
-      name: 'ResultsPage'
-    })
+    this.initWebsocket()
   },
   methods: {
     refresh () {
@@ -144,6 +133,26 @@ export default {
         })
       })
       this.combined = comb
+    },
+    initWebsocket () {
+      if (this.websocketUrl === null) return
+      this.ws = new WebSocketClient({
+        url: this.websocketUrl,
+        channels: {
+          results: (jsonMsg) => {
+            const msg = JSON.parse(jsonMsg)
+            if (!('heat_id' in msg)) return
+            const heatId = parseInt(msg.heat_id)
+            if (this.heats.has(heatId)) {
+              this.fetchResultsForHeat(heatId)
+            }
+          },
+          active_heats: () => {
+            this.fetchActiveHeats()
+          }
+        },
+        name: 'ResultsPage'
+      })
     },
     select_category (category) {
       this.category = category

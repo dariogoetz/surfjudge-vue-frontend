@@ -30,17 +30,21 @@
 
       <b-navbar-nav class="ml-auto">
         <dropdown-menu
-          :url="tournaments_url"
+          :url="tournamentsUrl"
           default-label="Select Tournament"
           variant="dark"
           select-first
           right
-          @selected="select_tournament"
+          @selected="selectTournament"
         />
       </b-navbar-nav>
     </b-navbar>
 
-    <router-view :tournament="tournament" />
+    <router-view
+      :tournament="tournament"
+      :websocket-url="config.websocket_url"
+      :api-url="apiUrl"
+    />
   </div>
 </template>
 
@@ -51,20 +55,37 @@ export default {
   components: {
     DropdownMenu
   },
+  props: {
+    apiUrl: { type: String, default: 'http://localhost:8081/rest' }
+  },
   data () {
     return {
-      tournament: null
+      tournament: null,
+      config: {
+        websocket_url: null,
+        base_url: ''
+      }
     }
   },
   computed: {
-    tournaments_url () {
-      return 'http://localhost:8081/rest/tournaments'
-      // return 'https://www.surfjudge.de/rest/tournaments'
+    configUrl () {
+      return `${this.apiUrl}/config`
+    },
+    tournamentsUrl () {
+      return `${this.apiUrl}/tournaments`
     }
   },
+  created () {
+    this.fetchConfig()
+  },
   methods: {
-    select_tournament (tournament) {
+    selectTournament (tournament) {
       this.tournament = tournament
+    },
+    fetchConfig () {
+      fetch(this.configUrl)
+        .then((response) => response.json())
+        .then((data) => { this.config = data })
     }
   }
 }

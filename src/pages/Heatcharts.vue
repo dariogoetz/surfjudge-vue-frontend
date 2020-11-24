@@ -13,6 +13,8 @@
         </template>
         <heatchart
           :category-id="category.id"
+          :websocket-url="websocketUrl"
+          :api-url="apiUrl"
         />
       </b-card>
       <hr>
@@ -28,7 +30,9 @@ export default {
     Heatchart
   },
   props: {
-    tournament: { type: Object, default: null }
+    tournament: { type: Object, default: null },
+    websocketUrl: { type: String, default: null },
+    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -37,12 +41,15 @@ export default {
   },
   computed: {
     categoriesUrl () {
-      return this.tournament === null ? null : `http://localhost:8081/rest/tournaments/${this.tournament.id}/categories`
+      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
       // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     }
   },
   watch: {
     tournament () {
+      this.refresh()
+    },
+    baseUrl () {
       this.refresh()
     }
   },

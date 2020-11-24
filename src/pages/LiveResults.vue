@@ -14,6 +14,7 @@
         <result-table
           :heat-id="heat.id"
           :websocket-url="websocketUrl"
+          :api-url="apiUrl"
         />
       </b-card>
     </b-container>
@@ -30,7 +31,8 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: 'wss://websocket.surfjudge.de' }
+    websocketUrl: { type: String, default: null },
+    apiUrl: { type: String, default: null }
   },
   data () {
     return {
@@ -40,24 +42,19 @@ export default {
   },
   computed: {
     activeHeatsUrl () {
-      return this.tournament === null ? null : `http://localhost:8081/rest/active_heats/${this.tournament.id}`
+      return this.tournament === null ? null : `${this.apiUrl}/active_heats/${this.tournament.id}`
     }
   },
   watch: {
     tournament () {
       this.refresh()
+    },
+    websocketUrl () {
+      this.initWebsocket()
     }
   },
   created () {
-    this.ws = new WebSocketClient({
-      url: this.websocketUrl,
-      channels: {
-        active_heats: (jsonMsg) => {
-          this.refresh()
-        }
-      },
-      name: 'LiveResultsPage'
-    })
+    this.initWebsocket()
     this.refresh()
   },
   methods: {
@@ -66,6 +63,18 @@ export default {
       fetch(this.activeHeatsUrl)
         .then((response) => response.json())
         .then((data) => { this.activeHeats = data })
+    },
+    initWebsocket () {
+      if (this.websocketUrl === null) return
+      this.ws = new WebSocketClient({
+        url: this.websocketUrl,
+        channels: {
+          active_heats: (jsonMsg) => {
+            this.refresh()
+          }
+        },
+        name: 'LiveResultsPage'
+      })
     }
   }
 }
