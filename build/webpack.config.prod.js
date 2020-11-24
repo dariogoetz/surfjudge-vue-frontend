@@ -18,6 +18,10 @@ module.exports = {
   // entry: [
   //     './src/index.js'
   // ],
+  output: {
+    publicPath: '/static/app',
+    path: resolve('dist/static/app')
+  },
   module: {
     rules: [
       {
@@ -51,9 +55,10 @@ module.exports = {
     }),
     new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
-      filename: 'index.html',
+      filename: resolve('dist/index.html'),
       template: 'index.html',
-      inject: true
+      inject: true,
+      favicon: resolve('static/img/favicon.png')
     }),
     // new ESLintPlugin(),
     new CopyWebpackPlugin({
