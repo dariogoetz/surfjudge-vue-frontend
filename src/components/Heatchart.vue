@@ -389,6 +389,8 @@ export default {
       this.genHeatSeeds()
       this.genHeatPlaces()
       this.genLinkPaths()
+
+      this.initLinkHover()
     },
     genD3GroupSelections () {
       const heats = this.d3Heats
@@ -672,6 +674,32 @@ export default {
              'C' + x2 + ',' + p0[1] +
              ' ' + x3 + ',' + p1[1] +
              ' ' + p1[0] + ',' + p1[1]
+    },
+    initLinkHover () {
+      this.d3Heats
+        .selectAll('.heat_seed')
+        .on('mouseover', (ev, d) => {
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.to_heat_id) && (d.seed === l.seed)))
+            .classed('focus', true)
+        })
+        .on('mouseout', (ev, d) => {
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.to_heat_id) && (d.seed === l.seed)))
+            .classed('focus', false)
+        })
+      this.d3Heats
+        .selectAll('.heat_place')
+        .on('mouseover', (ev, d) => {
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.from_heat_id) && (d.place === l.place)))
+            .classed('focus', true)
+        })
+        .on('mouseout', (ev, d) => {
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.from_heat_id) && (d.place === l.place)))
+            .classed('focus', false)
+        })
     }
   }
 }
@@ -735,4 +763,8 @@ div >>> .link
   fill none
   stroke #cccccc
   stroke-width 1px
+
+div >>> .link.focus
+  stroke #000000
+  stroke-width 1.5px
 </style>
