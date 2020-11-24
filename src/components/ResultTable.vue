@@ -36,15 +36,12 @@ export default {
   computed: {
     resultsUrl () {
       return `${this.apiUrl}/heats/${this.heatId}/results`
-      // return https://www.surfjudge.de/rest/results/${this.heatId}`
     },
     heatUrl () {
       return `${this.apiUrl}/heats/${this.heatId}`
-      // return `https://www.surfjudge.de/rest/heats/${this.heatId}`
     },
     participationsUrl () {
       return `${this.apiUrl}/heats/${this.heatId}/participations`
-      // return `https://www.surfjudge.de/rest/participants/${this.heatId}`
     },
     fields () {
       if (this.results === null) return []

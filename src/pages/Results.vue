@@ -73,11 +73,9 @@ export default {
   computed: {
     categoriesUrl () {
       return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
-      // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     },
     categoryHeatsUrl () {
       return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/heats`
-      // return this.category === null ? null : `https://www.surfjudge.de/rest/heats?category_id=${this.category.id}`
     },
     categoryResultsUrl () {
       return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/results`
@@ -87,7 +85,6 @@ export default {
     },
     categoryActiveHeatsUrl () {
       return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/active_heats`
-      // return this.category === null ? null : `https://www.surfjudge.de/rest/active_heats`
     },
     guiData () {
       const r2h = new Map()

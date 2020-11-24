@@ -42,7 +42,6 @@ export default {
   computed: {
     categoriesUrl () {
       return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
-      // return this.tournament === null ? null : `https://www.surfjudge.de/rest/categories?tournament_id=${this.tournament.id}`
     }
   },
   watch: {
