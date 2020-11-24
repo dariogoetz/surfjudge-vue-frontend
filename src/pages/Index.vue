@@ -56,7 +56,7 @@ export default {
     DropdownMenu
   },
   props: {
-    apiUrl: { type: String, default: 'http://localhost:8081/rest' }
+    apiUrl: { type: String, default: '' }
   },
   data () {
     return {

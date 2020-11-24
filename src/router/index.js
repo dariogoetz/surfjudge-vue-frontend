@@ -13,6 +13,7 @@ const routes = [
   {
     path: '/',
     component: Index,
+    props: { apiUrl: 'http://localhost:8081/rest' },
     children: [
       { path: '', component: LiveResults },
       { path: 'live_results', component: LiveResults },
