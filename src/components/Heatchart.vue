@@ -689,18 +689,26 @@ export default {
       this.d3Heats
         .selectAll('.heat_seed')
         .on('mouseover', (ev, d) => {
-          // TODO: find correct link svg elem and add class "focus"
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.to_heat_id) && (d.seed === l.seed)))
+            .classed('focus', true)
         })
         .on('mouseout', (ev, d) => {
-          // TODO: find correct link svg elem and remove class "focus"
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.to_heat_id) && (d.seed === l.seed)))
+            .classed('focus', false)
         })
       this.d3Heats
         .selectAll('.heat_place')
         .on('mouseover', (ev, d) => {
-          // TODO: find correct link svg elem and add class "focus"
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.from_heat_id) && (d.place === l.place)))
+            .classed('focus', true)
         })
         .on('mouseout', (ev, d) => {
-          // TODO: find correct link svg elem and remove class "focus"
+          this.d3Links.selectAll('.link')
+            .filter((l) => ((d.heat.id === l.from_heat_id) && (d.place === l.place)))
+            .classed('focus', false)
         })
     }
   }
@@ -765,4 +773,8 @@ div >>> .link
   fill none
   stroke #cccccc
   stroke-width 1px
+
+div >>> .link.focus
+  stroke #000000
+  stroke-width 1.5px
 </style>
