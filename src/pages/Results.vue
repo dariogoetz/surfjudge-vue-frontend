@@ -93,7 +93,8 @@ export default {
         if (!r2h.has(d.heat.round)) {
           r2h.set(d.heat.round, [])
         }
-        r2h.get(d.heat.round).push(d)
+        const participations = d.participations || []
+        if (participations.length > 0) r2h.get(d.heat.round).push(d)
       })
       // sort heats in each round
       r2h.forEach((heats, round) => {
