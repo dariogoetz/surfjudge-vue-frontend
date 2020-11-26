@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/',
     component: Index,
-    props: { apiUrl: 'http://localhost:8081/rest' },
+    props: { apiUrl: __API_PATH__ }, // is defined in webpack config
     children: [
       { path: '', component: LiveResults },
       { path: 'live_results', component: LiveResults },

@@ -1,5 +1,6 @@
 'use strict'
 
+const webpack = require('webpack')
 const { VueLoaderPlugin } = require('vue-loader')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -50,6 +51,9 @@ module.exports = {
     ]
   },
   plugins: [
+    new webpack.DefinePlugin({
+      __API_PATH__: JSON.stringify('/public')
+    }),
     new MiniCssExtractPlugin({
       filename: 'main.css'
     }),

@@ -53,6 +53,9 @@ module.exports = {
     ]
   },
   plugins: [
+    new webpack.DefinePlugin({
+      __API_PATH__: JSON.stringify('http://localhost:8081/public')
+    }),
     new MiniCssExtractPlugin({
       filename: 'main.css'
     }),
