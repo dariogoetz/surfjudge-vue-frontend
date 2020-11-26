@@ -64,7 +64,8 @@ module.exports = {
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'index.html',
-      inject: true
+      inject: true,
+      favicon: resolve('static/img/favicon.png')
     }),
     // new ESLintPlugin(),
     new CopyWebpackPlugin({
