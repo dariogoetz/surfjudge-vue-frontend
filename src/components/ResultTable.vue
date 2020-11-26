@@ -58,7 +58,7 @@ export default {
         {
           key: 'place',
           label: '',
-          formatter: (p) => `${p}.`,
+          formatter: (p) => `${p}` + (p === '-' ? '' : '.'),
           tdClass: 'place_cell',
           thClass: 'place_header'
         },
