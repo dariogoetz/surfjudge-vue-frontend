@@ -70,7 +70,7 @@ export default {
         {
           key: 'total_score',
           label: 'Score',
-          formatter: (s) => this.round(s, this.roundDecimals).toFixed(this.roundDecimals),
+          formatter: (s) => this.round(s || 0, this.roundDecimals).toFixed(this.roundDecimals),
           tdClass: 'total_score_cell',
           thClass: 'total_score_header'
         },
