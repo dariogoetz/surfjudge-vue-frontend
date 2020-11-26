@@ -22,6 +22,7 @@ export default {
     marginLeft: { type: Number, default: 0 },
     marginRight: { type: Number, default: 0 },
 
+    minRows: { type: Number, default: 1 },
     baseHeatWidth: { type: Number, default: 280 },
     heatMinVerticalSpacing: { type: Number, default: 50 },
     heatHorizontalSpacing: { type: Number, default: 100 },
@@ -119,14 +120,30 @@ export default {
       ))
       return res
     },
+    fromAdvancementsMap () {
+      const res = new Map()
+      this.combined.advancements.forEach((adv) => {
+        if (!res.has(adv.from_heat_id)) res.set(adv.from_heat_id, [])
+        res.get(adv.from_heat_id).push(adv)
+      })
+      res.forEach((advs) => advs.sort(
+        (a, b) => a.place - b.place
+      ))
+      return res
+    },
     nParticipants () {
       // map: heat_id -> max(max_seed_in_link, max_seed_participations)
       const res = new Map()
       this.combined.heatsMap.forEach((heat) => {
-        const advanced = (this.toAdvancementsMap.get(heat.id) || [])
-        const maxAdv = Math.max(
+        const toAdvanced = (this.toAdvancementsMap.get(heat.id) || [])
+        const maxSeed = Math.max(
           0,
-          ...advanced.map((adv) => adv.seed + 1)
+          ...toAdvanced.map((adv) => adv.seed + 1)
+        )
+        const fromAdvanced = (this.fromAdvancementsMap.get(heat.id) || [])
+        const maxPlace = Math.max(
+          0,
+          ...fromAdvanced.map((adv) => adv.place + 1)
         )
         const part = (this.combined.participationsMap.get(heat.id) || [])
         const maxPart = Math.max(
@@ -134,7 +151,9 @@ export default {
           ...part.map((p) => p.seed + 1)
         )
         const nParticipants = Math.max(
-          maxAdv,
+          this.minRows,
+          maxSeed,
+          maxPlace,
           maxPart
         )
         res.set(heat.id, nParticipants)
@@ -732,13 +751,18 @@ div >>> .heat_node text
 div >>> .heat_node text.title
   font-weight bold
 
-// participant names
 div >>> .heat_seed text
   text-anchor middle
   alignment-baseline middle
 
+div >>> .heat_seed rect
+  stroke-width 1px
+  stroke #cccccc
+
 div >>> .heat_place rect
   fill white
+  stroke-width 1px
+  stroke #cccccc
 
 div >>> .heat_place.first rect
   fill gold
