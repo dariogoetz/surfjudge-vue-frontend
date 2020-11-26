@@ -390,7 +390,7 @@ export default {
         })
     },
     heatResultsUrl (heatId) {
-      return `http://localhost:8081/rest/heats/${heatId}/results`
+      return `${this.apiUrl}/heats/${heatId}/results`
     },
     draw () {
       // TODO: focus heat elem
