@@ -164,7 +164,7 @@ export default {
       this.fetchActiveHeats()
     },
     heatResultsUrl (heatId) {
-      return `http://localhost:8081/rest/heats/${heatId}/results`
+      return `${this.apiUrl}/heats/${heatId}/results`
     },
     fetchHeats () {
       return fetch(this.categoryHeatsUrl)
