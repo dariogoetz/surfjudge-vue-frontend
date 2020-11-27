@@ -600,7 +600,7 @@ export default {
         .attr('y', rowHeight * 2.0 / 3)
         .text((d) => {
           // only show placings for not active heats (for an active heat, the placing is not fixed)
-          const showPlacing = true // TODO: false if this is a focus heat
+          const showPlacing = (this.activeHeats || []).filter((heat) => heat.id === d.heat.id).length === 0
           if (d.result && showPlacing) {
             const s = d.result.surfer
             return `${s.first_name} ${s.last_name}`
@@ -628,7 +628,7 @@ export default {
           .text((d) => {
             let label = ''
             // only show placings for not active heats (for an active heat, the placing is not fixed)
-            const showPlacing = true // _this.focus_heat_ids == null || typeof _this.focus_heat_ids === 'undefined' || _this.focus_heat_ids.indexOf(heat_id) < 0;
+            const showPlacing = (this.activeHeats || []).filter((heat) => heat.id === d.heat.id).length === 0
             if (d.result && showPlacing) {
               label = '' + d.result.total_score.toFixed(1)
             }
@@ -692,8 +692,7 @@ export default {
             }
           })
           .text((d) => {
-            const activeHeats = this.activeHeats || []
-            const showPlacing = activeHeats.filter((heat) => heat.id === d.heatId).length === 0
+            const showPlacing = (this.activeHeats || []).filter((heat) => heat.id === d.heatId).length === 0
             if (showPlacing) {
               return d.hasVal ? d.score.toFixed(1) : ''
             }
@@ -705,7 +704,7 @@ export default {
       const focusGroup = this.d3GroupSelections.heats
         .enter()
         .filter((heat) => {
-          return this.activeHeats.filter((h) => h.id === heat.id).length > 0
+          return (this.activeHeats || []).filter((h) => h.id === heat.id).length > 0
         })
         .append('g')
         .attr('class', 'focus_heat')
