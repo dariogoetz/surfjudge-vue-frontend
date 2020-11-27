@@ -2,14 +2,14 @@
   <div>
     <b-container>
       <b-card
-        v-for="heat in activeHeats"
+        v-for="heat in guiData"
         :key="heat.id"
         no-body
         header-bg-variant="secondary"
         header-text-variant="white"
       >
         <template #header>
-          {{ heat.name }}
+          {{ heat.category.name }}: {{ heat.name }}
         </template>
         <result-table
           :heat-id="heat.id"
@@ -36,13 +36,27 @@ export default {
   },
   data () {
     return {
-      activeHeats: [],
+      activeHeats: null,
+      categories: null,
       ws: null
     }
   },
   computed: {
     activeHeatsUrl () {
       return this.tournament === null ? null : `${this.apiUrl}/active_heats/${this.tournament.id}`
+    },
+    categoriesUrl () {
+      return `${this.apiUrl}/categories`
+    },
+    guiData () {
+      if ((this.activeHeats === null) || (this.categories === null)) return []
+      const res = []
+      this.activeHeats.forEach((h) => {
+        const heat = Object.assign({}, h)
+        heat.category = this.categories.get(h.category_id) || {}
+        res.push(heat)
+      })
+      return res
     }
   },
   watch: {
@@ -62,7 +76,18 @@ export default {
       if (this.tournament === null) return
       fetch(this.activeHeatsUrl)
         .then((response) => response.json())
-        .then((data) => { this.activeHeats = data })
+        .then((data) => {
+          this.activeHeats = data
+        })
+
+      fetch(this.categoriesUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          this.categories = new Map()
+          data.forEach((c) => {
+            this.categories.set(c.id, c)
+          })
+        })
     },
     initWebsocket () {
       if (this.websocketUrl === null) return
