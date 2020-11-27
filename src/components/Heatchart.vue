@@ -496,7 +496,7 @@ export default {
               x: (1.0 - this.placeWidthFactor) * this.heatWidth - scoreWidth,
               y: place * this.rowHeight
             },
-            result: (d.results || []).find((r) => r.place === place) || null,
+            result: (d.results || [])[place] || null,
             place
           }))
         )
