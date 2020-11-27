@@ -66,7 +66,6 @@ export default {
       results: null,
       participations: null,
       activeHeats: [],
-      combined: new Map(),
       ws: null
     }
   },
@@ -87,14 +86,21 @@ export default {
       return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/active_heats`
     },
     guiData () {
+      if ((this.results === null) || (this.participations === null) || (this.heats === null)) return []
       const r2h = new Map()
-      this.combined.forEach((d) => {
-        // TODO: check if no participants and exclude in that case
-        if (!r2h.has(d.heat.round)) {
-          r2h.set(d.heat.round, [])
+      this.heats.forEach((heat) => {
+        if (!r2h.has(heat.round)) {
+          r2h.set(heat.round, [])
         }
-        const participations = d.participations || []
-        if (participations.length > 0) r2h.get(d.heat.round).push(d)
+        const combined = {
+          heat,
+          participations: this.participations.get(heat.id) || [],
+          results: this.results.get(heat.id),
+          active: Boolean(this.activeHeats.find((h) => heat.id === h.id))
+        }
+        if (combined.participations.length > 0) {
+          r2h.get(combined.heat.round).push(combined)
+        }
       })
       // sort heats in each round
       r2h.forEach((heats, round) => {
@@ -119,19 +125,6 @@ export default {
     this.initWebsocket()
   },
   methods: {
-    refresh () {
-      if ((this.results === null) || (this.participations === null) || (this.heats === null)) return
-      const comb = new Map()
-      this.heats.forEach((heat) => {
-        comb.set(heat.id, {
-          heat,
-          participations: this.participations.get(heat.id),
-          results: this.results.get(heat.id),
-          active: Boolean(this.activeHeats.find((h) => heat.id === h.id))
-        })
-      })
-      this.combined = comb
-    },
     initWebsocket () {
       if (this.websocketUrl === null) return
       this.ws = new WebSocketClient({
@@ -175,7 +168,6 @@ export default {
             m.set(d.id, d)
             return m
           }, new Map())
-          this.refresh()
         })
     },
     fetchResults () {
@@ -187,7 +179,6 @@ export default {
             if (!this.results.has(d.heat_id)) this.results.set(d.heat_id, [])
             this.results.get(d.heat_id).push(d)
           })
-          this.refresh()
         })
     },
     fetchResultsForHeat (heatId) {
@@ -195,7 +186,6 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.results.set(heatId, data)
-          this.refresh()
         })
     },
     fetchParticipations () {
@@ -207,7 +197,6 @@ export default {
             if (!this.participations.has(d.heat_id)) this.participations.set(d.heat_id, [])
             this.participations.get(d.heat_id).push(d)
           })
-          this.refresh()
         })
     },
     fetchActiveHeats () {
@@ -215,7 +204,6 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.activeHeats = data
-          this.refresh()
         })
     }
   }
