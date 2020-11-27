@@ -692,15 +692,10 @@ export default {
             }
           })
           .text((d) => {
-            var showPlacing = true // _this.focus_heat_ids == null || typeof _this.focus_heat_ids === 'undefined' || _this.focus_heat_ids.indexOf(d["heat_id"]) < 0;
+            const activeHeats = this.activeHeats || []
+            const showPlacing = activeHeats.filter((heat) => heat.id === d.heatId).length === 0
             if (showPlacing) {
               return d.hasVal ? d.score.toFixed(1) : ''
-              // var val = d.score
-              // if ('score' in d)
-              //   val = val.toFixed(1)
-              // else
-              //   val = ''
-              // return val;
             }
           })
       }
