@@ -65,7 +65,8 @@ export default {
       heats: null,
       results: null,
       participations: null,
-      activeHeats: [],
+      activeHeats: null,
+      combined: [],
       ws: null
     }
   },
@@ -86,20 +87,13 @@ export default {
       return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/active_heats`
     },
     guiData () {
-      if ((this.results === null) || (this.participations === null) || (this.heats === null)) return []
       const r2h = new Map()
-      this.heats.forEach((heat) => {
-        if (!r2h.has(heat.round)) {
-          r2h.set(heat.round, [])
+      this.combined.forEach((c) => {
+        if (!r2h.has(c.heat.round)) {
+          r2h.set(c.heat.round, [])
         }
-        const combined = {
-          heat,
-          participations: this.participations.get(heat.id) || [],
-          results: this.results.get(heat.id),
-          active: Boolean(this.activeHeats.find((h) => heat.id === h.id))
-        }
-        if (combined.participations.length > 0) {
-          r2h.get(combined.heat.round).push(combined)
+        if (c.participations.length > 0) {
+          r2h.get(c.heat.round).push(c)
         }
       })
       // sort heats in each round
@@ -150,6 +144,7 @@ export default {
       this.heats = null
       this.results = null
       this.participations = null
+      this.activeHeats = null
 
       // fetch data for all heats in category once and distribute data directly
       this.fetchHeats()
@@ -168,6 +163,7 @@ export default {
             m.set(d.id, d)
             return m
           }, new Map())
+          this.refreshGuiData()
         })
     },
     fetchResults () {
@@ -179,6 +175,7 @@ export default {
             if (!this.results.has(d.heat_id)) this.results.set(d.heat_id, [])
             this.results.get(d.heat_id).push(d)
           })
+          this.refreshGuiData()
         })
     },
     fetchResultsForHeat (heatId) {
@@ -186,6 +183,7 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.results.set(heatId, data)
+          this.refreshGuiData()
         })
     },
     fetchParticipations () {
@@ -197,6 +195,7 @@ export default {
             if (!this.participations.has(d.heat_id)) this.participations.set(d.heat_id, [])
             this.participations.get(d.heat_id).push(d)
           })
+          this.refreshGuiData()
         })
     },
     fetchActiveHeats () {
@@ -204,7 +203,30 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.activeHeats = data
+          this.refreshGuiData()
         })
+    },
+    refreshGuiData () {
+      // this (and the combined data) are used to support
+      // explicitely triggering a refresh if Map content changed
+      // (computed values do not update automatically then)
+      if (
+        (this.results === null) ||
+        (this.participations === null) ||
+        (this.heats === null) ||
+        (this.activeHeats === null)
+      ) return []
+
+      const res = []
+      this.heats.forEach((heat) => {
+        res.push({
+          heat,
+          participations: this.participations.get(heat.id) || [],
+          results: this.results.get(heat.id),
+          active: Boolean(this.activeHeats.find((h) => heat.id === h.id))
+        })
+      })
+      this.combined = res
     }
   }
 }
