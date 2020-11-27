@@ -342,7 +342,7 @@ export default {
               this.fetchParticipants()
             }
           },
-          active_heats: (jsonMsg) => {
+          active_heats: () => {
             this.fetchActiveHeats()
           }
         },
