@@ -43,6 +43,7 @@ export default {
       advancements: null,
       participationsMap: null,
       resultsMap: null,
+      activeHeats: null,
       combined: {
         heatsMap: new Map(),
         resultsMap: new Map(),
@@ -69,6 +70,9 @@ export default {
     },
     participationsUrl () {
       return `${this.apiUrl}/categories/${this.categoryId}/participations`
+    },
+    activeHeatsUrl () {
+      return `${this.apiUrl}/categories/${this.categoryId}/active_heats`
     },
     width () {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
@@ -271,15 +275,11 @@ export default {
     this.initWebSocket()
   },
   mounted () {
-    Promise.all([
-      this.fetchHeats(),
-      this.fetchResults(),
-      this.fetchAdvancements(),
-      this.fetchParticipations()
-    ]).then(() => {
-      this.initSvg()
-      this.draw()
-    })
+    this.fetchHeats()
+    this.fetchResults()
+    this.fetchAdvancements()
+    this.fetchParticipations()
+    this.fetchActiveHeats()
   },
   methods: {
     initSvg () {
@@ -302,13 +302,21 @@ export default {
         .attr('class', 'svg_links')
     },
     refresh () {
-      if ((this.heatsMap === null) || (this.resultsMap === null) || (this.participationsMap === null) || (this.advancements === null)) return
+      if (
+        (this.heatsMap === null) ||
+        (this.resultsMap === null) ||
+        (this.participationsMap === null) ||
+        (this.advancements === null)
+      ) return
+
       this.combined = {
         heatsMap: this.heatsMap || new Map(),
         resultsMap: this.resultsMap || new Map(),
         participationsMap: this.participationsMap || new Map(),
         advancements: this.advancements || []
       }
+      this.initSvg()
+      this.draw()
     },
     initWebSocket () {
       if (this.websocketUrl === null) return
@@ -320,28 +328,22 @@ export default {
             if (!('heat_id' in msg)) return
             const heatId = parseInt(msg.heat_id)
             if (this.heatsMap.has(heatId)) {
-              this.fetchResultsForHeat(heatId).then(() => {
-                this.initSvg()
-                this.draw()
-              })
+              this.fetchResultsForHeat(heatId)
             }
           },
           advancements: () => {
-            this.fetchAdvancements().then(() => {
-              this.initSvg()
-              this.draw()
-            })
+            this.fetchAdvancements()
           },
           participants: (jsonMsg) => {
             const msg = JSON.parse(jsonMsg)
             if (!('heat_id' in msg)) return
             const heatId = parseInt(msg.heat_id)
             if (this.heatsMap.has(heatId)) {
-              this.fetchParticipants().then(() => {
-                this.initSvg()
-                this.draw()
-              })
+              this.fetchParticipants()
             }
+          },
+          active_heats: (jsonMsg) => {
+            this.fetchActiveHeats()
           }
         },
         name: 'HeatChart'
@@ -397,6 +399,14 @@ export default {
           this.refresh()
         })
     },
+    fetchActiveHeats () {
+      return fetch(this.activeHeatsUrl)
+        .then(response => response.json())
+        .then(data => {
+          this.activeHeats = data
+          this.refresh()
+        })
+    },
     fetchResultsForHeat (heatId) {
       return fetch(this.heatResultsUrl(heatId))
         .then(response => response.json())
@@ -412,8 +422,11 @@ export default {
       return `${this.apiUrl}/heats/${heatId}/results`
     },
     draw () {
-      // TODO: focus heat elem
       this.genD3GroupSelections()
+
+      // focus box first to be in the back
+      this.genFocusHeatBoxes()
+
       this.genD3GroupEnters()
 
       this.genHeatBoxes()
@@ -692,6 +705,30 @@ export default {
           })
       }
     },
+    genFocusHeatBoxes () {
+      const size = 30
+      const focusGroup = this.d3GroupSelections.heats
+        .enter()
+        .filter((heat) => {
+          return this.activeHeats.filter((h) => h.id === heat.id).length > 0
+        })
+        .append('g')
+        .attr('class', 'focus_heat')
+        .attr('transform', (d) => `translate(${d.coordinates.x} ${d.coordinates.y})`)
+
+      focusGroup
+        .append('rect')
+        .attr('x', -size)
+        .attr('y', -size)
+        .attr('width', this.heatWidth + 2 * size)
+        .attr('height', (d) => this.rowHeight * d.nParticipants + 1.75 * size)
+
+      focusGroup
+        .append('text')
+        .attr('x', this.heatWidth + 2 * size - 75)
+        .attr('y', -10)
+        .text('LIVE')
+    },
     genLinkPaths () {
       this.d3GroupEnters.links
         .attr('d', (link) => this.linkPath(link.sourceCoordinates, link.targetCoordinates))
@@ -794,6 +831,14 @@ div >>> .heat_place > .total_score > text
 
 div >>> .heat_place > .score > text.best_score
   font-weight bold
+
+div >>> .focus_heat > rect
+    fill #DDDDDD
+    stroke none
+
+div >>> .focus_heat > text
+    fill #FFFFFF
+    font-weight bold
 
 div >>> .link
   fill none
