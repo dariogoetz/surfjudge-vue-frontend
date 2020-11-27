@@ -505,7 +505,7 @@ export default {
         .attr('class', (d) => {
           const result = (d.heat.results || [])[d.place] || {}
           let place = d.place
-          const showPlacing = true // TODO: false if this is a focus heat
+          const showPlacing = (this.activeHeats || []).filter((heat) => heat.id === d.heat.id).length === 0
           if (showPlacing && result.place) place = result.place // multiple surfers may have the same place
           switch (place) {
             case 0:
