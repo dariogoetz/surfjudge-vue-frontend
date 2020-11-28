@@ -134,6 +134,9 @@ export default {
           },
           active_heats: () => {
             this.fetchActiveHeats()
+          },
+          participants: () => {
+            this.fetchParticipations()
           }
         },
         name: 'ResultsPage'
@@ -203,6 +206,7 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.activeHeats = data
+          console.log(data)
           this.refreshGuiData()
         })
     },

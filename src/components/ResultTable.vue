@@ -142,6 +142,9 @@ export default {
       if (val.heat) this.heat = val.heat
       if (val.results) this.results = val.results
       if (val.participations) this.participations = val.participations
+    },
+    websocketUrl () {
+      this.initWebSocket()
     }
   },
   created () {
@@ -154,25 +157,30 @@ export default {
       this.heat = this.initialData.heat || {}
       this.participations = this.initialData.participations || []
     }
-
-    if (this.websocketUrl) {
-      this.ws = new WebSocketClient({
-        url: this.websocketUrl,
-        channels: {
-          results: (jsonMsg) => {
-            const msg = JSON.parse(jsonMsg)
-            if (!('heat_id' in msg)) return
-            const heatId = parseInt(msg.heat_id)
-            if (this.heat.id === heatId) {
-              this.fetchResults()
-            }
-          }
-        },
-        name: 'ResultsTable'
-      })
-    }
+    this.initWebSocket()
   },
   methods: {
+    initWebSocket () {
+      if (this.websocketUrl) {
+        this.ws = new WebSocketClient({
+          url: this.websocketUrl,
+          channels: {
+            results: (jsonMsg) => {
+              const msg = JSON.parse(jsonMsg)
+              if (!('heat_id' in msg)) return
+              const heatId = parseInt(msg.heat_id)
+              if (this.heat.id === heatId) {
+                this.fetchResults()
+              }
+            },
+            participants: () => {
+              this.fetchParticipations()
+            }
+          },
+          name: 'ResultsTable'
+        })
+      }
+    },
     fetchResults () {
       return fetch(this.resultsUrl)
         .then(response => response.json())
