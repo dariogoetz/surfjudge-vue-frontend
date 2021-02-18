@@ -339,7 +339,7 @@ export default {
             if (!('heat_id' in msg)) return
             const heatId = parseInt(msg.heat_id)
             if (this.heatsMap.has(heatId)) {
-              this.fetchParticipants()
+              this.fetchParticipations()
             }
           },
           active_heats: () => {
