@@ -129,7 +129,7 @@ export default {
       const m = Math.max(0, ...this.results.map((res) =>
         Math.max(...res.wave_scores.map((v) => v.wave)
         )))
-      return m
+      return m + 1
     },
     roundDecimals () {
       if (this.heat === null) return this.decimals
