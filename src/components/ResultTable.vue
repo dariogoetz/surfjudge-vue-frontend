@@ -21,6 +21,8 @@ export default {
   props: {
     heatId: { type: Number, required: true },
     decimals: { type: Number, default: 2 },
+    showNeeds: { type: Boolean, default: true },
+    showNeedsSecond: { type: Boolean, default: true },
     initialData: { type: Object, default: null },
     websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
@@ -34,6 +36,9 @@ export default {
     }
   },
   computed: {
+    needsVisible () {
+      return (this.showNeeds && this.heat_type !== 'call') || false
+    },
     resultsUrl () {
       return `${this.apiUrl}/heats/${this.heatId}/results`
     },
@@ -74,10 +79,23 @@ export default {
           tdClass: 'total_score_cell',
           thClass: 'total_score_header'
         },
+        ...(this.needsVisible ? [{
+          key: 'needs',
+          label: this.showNeedsSecond ? 'Needs 1./2.' : 'Needs',
+          formatter: (needs) => {
+            let res = `${needs[0] > 0 ? needs[0].toFixed(this.roundDecimals) : '-'}`
+            if (this.showNeedsSecond) {
+              res += ` / ${needs[1] > 0 ? needs[1].toFixed(this.roundDecimals) : '-'}`
+            }
+            return res
+          },
+          tdClass: 'needs_cell',
+          thClass: 'needs_header'
+        }] : []),
         ...[...Array(this.nWaves).keys()].map((v, i) => {
           return {
             key: `wave_${i}`,
-            formatter: (s) => this.round(s.score, this.roundDecimals).toFixed(this.roundDecimals),
+            formatter: (s) => s ? this.round(s.score, this.roundDecimals).toFixed(this.roundDecimals) : '',
             label: `Wave ${i + 1}`,
             tdClass: (value, key, item) => value.best_wave ? 'best_wave wave_score_cell' : 'wave_score_cell',
             thClass: 'wave_score_header'
@@ -106,6 +124,12 @@ export default {
         const row = {
           lycra_color: part.lycra_color,
           surfer: part.surfer
+        }
+
+        if (this.needsVisible) {
+          Object.assign(row, {
+            needs: this.needs.get(part.surfer_id)
+          })
         }
 
         if (resultMap.has(part.surfer_id)) {
@@ -142,6 +166,33 @@ export default {
       if (this.heat === null) return this.decimals
       if (this.heat.heat_type === 'call') return 0
       return this.decimals
+    },
+    needs () {
+      const sortedTotalScores = this.results.map((result) => {
+        return parseFloat(result.total_score)
+      }).sort((a, b) => b - a)
+
+      // initialize needs with target_total_score
+      // also for participants, that do not appear in this.results, yet
+      const needs = new Map()
+      this.results.forEach((result) => {
+        const waveScores = result.wave_scores.concat() || []
+
+        // sort waves for surfer by score
+        const sortedWS = waveScores.sort((a, b) => b.score - a.score)
+
+        // get best wave of surfer
+        const bw = sortedWS[0] || { score: 0, wave: -1 }
+        const surferNeeds = sortedTotalScores.map((targetScore) => {
+          if (result.total_score >= targetScore) {
+            return -1
+          } else {
+            return this.round(targetScore - bw.score, this.roundDecimals)
+          }
+        })
+        needs.set(result.surfer_id, surferNeeds)
+      })
+      return needs
     }
   },
   watch: {
@@ -254,6 +305,9 @@ table >>> thead > tr
 
 table >>> thead > tr > th.color_header
   background-color #FFFFFF
+
+table >>> tr > td.needs_cell
+  text-align center
 
 table >>> tr
   font-size 1.5em
