@@ -315,6 +315,8 @@ table >>> thead > tr > th.surfer_header
 table >>> tr
   font-size 1.5em
   text-align center
+
+table >>> tr > td
   vertical-align middle
 
 table >>> tr > td.place_cell
