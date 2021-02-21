@@ -7,7 +7,7 @@
       borderless
     >
       <template #cell(surfer)="data">
-        {{ data.value.first_name }} <b>{{ data.value.last_name.toUpperCase() }}</b>
+        {{ data.value.first_name }} <br v-if="lastNameOnNewline"><b>{{ data.value.last_name.toUpperCase() }}</b>
       </template>
     </b-table>
   </div>
@@ -23,6 +23,7 @@ export default {
     decimals: { type: Number, default: 2 },
     showNeeds: { type: Boolean, default: true },
     showNeedsSecond: { type: Boolean, default: true },
+    lastNameOnNewline: { type: Boolean, default: true },
     initialData: { type: Object, default: null },
     websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
@@ -121,6 +122,7 @@ export default {
 
       const res = this.participations.map((part, i) => {
         // add column data that are available for every participant
+        console.log(part.surfer)
         const row = {
           lycra_color: part.lycra_color,
           surfer: part.surfer
@@ -310,11 +312,24 @@ table >>> thead > tr > th.color_header
 table >>> thead > tr > th.surfer_header
   text-align left
 
-table >>> tr > td.needs_cell
-  text-align center
-
 table >>> tr
   font-size 1.5em
+  text-align center
+  vertical-align middle
+
+table >>> tr > td.place_cell
+  background-color rgba(0, 0, 0, 0.1)
+
+table >>> tr > td.surfer_cell
+  text-align left
+  background-color rgba(0, 0, 0, 0.1)
+
+table >>> tr > td.needs_cell
+  text-align center
+  background-color rgba(0, 0, 0, 0.1)
+
+table >>> tr > td.total_score_cell
+  font-weight bold
 
 table >>> td.best_wave
   font-weight bold
