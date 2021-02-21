@@ -88,11 +88,18 @@ export default {
     rows () {
       if (this.results === null) return []
       if (this.participations === null) return []
+      if (this.heat === null) return []
 
       const resultMap = new Map() // map surfer_id -> scores
-      this.annotate_best_waves_standard(this.results).forEach((v, i) => {
-        resultMap.set(v.surfer_id, v)
-      })
+      if (this.heat.heat_type === 'call') {
+        this.annotate_best_waves_call(this.results).forEach((v, i) => {
+          resultMap.set(v.surfer_id, v)
+        })
+      } else {
+        this.annotate_best_waves_standard(this.results).forEach((v, i) => {
+          resultMap.set(v.surfer_id, v)
+        })
+      }
 
       const res = this.participations.map((part, i) => {
         // add column data that are available for every participant
@@ -205,18 +212,34 @@ export default {
       }
     },
     annotate_best_waves_standard (results) {
-      const res = []
+      // annotate best two scores by surfer in place
       results.forEach((surferResults) => {
         const s = Object.assign({}, surferResults)
         s.wave_scores = s.wave_scores.slice().sort((a, b) => b.score - a.score)
         if (s.wave_scores.length > 1) s.wave_scores[0].best_wave = true
         if (s.wave_scores.length > 2) s.wave_scores[1].best_wave = true
-        res.push(s)
       })
-      return res
+      return results
     },
     annotate_best_waves_call (results) {
-      // TODO
+      const scoresByWave = new Map()
+      // group scores by wave
+      results.forEach((surferResults) => {
+        surferResults.wave_scores.forEach((score) => {
+          if (!scoresByWave.has(score.wave)) {
+            scoresByWave.set(score.wave, [])
+          }
+          scoresByWave.get(score.wave).push(score)
+        })
+      })
+      // for each wave, determine best score and annotate in place
+      scoresByWave.forEach((scores, wave) => {
+        const m = Math.max(...scores.map((s) => s.score))
+        scores.forEach((s) => {
+          if (s.score === m) s.best_wave = true
+        })
+      })
+      return results
     }
   }
 }
