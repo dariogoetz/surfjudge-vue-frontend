@@ -302,9 +302,13 @@ table >>> thead > tr
   font-size 1.5em
   font-align center
   background-color #CCCCCC
+  text-align center
 
 table >>> thead > tr > th.color_header
   background-color #FFFFFF
+
+table >>> thead > tr > th.surfer_header
+  text-align left
 
 table >>> tr > td.needs_cell
   text-align center
