@@ -64,7 +64,7 @@ export default {
         {
           key: 'place',
           label: '',
-          formatter: (p) => `${p}` + (p === '-' ? '' : '.'),
+          formatter: (p) => p === null ? '-' : `${p}.`,
           tdClass: 'place_cell',
           thClass: 'place_header'
         },
@@ -76,7 +76,7 @@ export default {
         {
           key: 'total_score',
           label: 'Score',
-          formatter: (s) => this.round(s || 0, this.roundDecimals).toFixed(this.roundDecimals),
+          formatter: (s) => s === null ? '-' : this.round(s, this.roundDecimals).toFixed(this.roundDecimals),
           tdClass: 'total_score_cell',
           thClass: 'total_score_header'
         },
@@ -122,7 +122,6 @@ export default {
 
       const res = this.participations.map((part, i) => {
         // add column data that are available for every participant
-        console.log(part.surfer)
         const row = {
           lycra_color: part.lycra_color,
           surfer: part.surfer
@@ -130,7 +129,7 @@ export default {
 
         if (this.needsVisible) {
           Object.assign(row, {
-            needs: this.needs.get(part.surfer_id)
+            needs: this.needs.get(part.surfer_id) || []
           })
         }
 
@@ -149,8 +148,8 @@ export default {
         } else {
           // place and score not available
           Object.assign(row, {
-            place: '-',
-            score: '-'
+            place: null,
+            score: null
           })
         }
         return row
@@ -159,6 +158,7 @@ export default {
     },
     nWaves () {
       // parse all wave scores and find maximum wave number
+      if (this.results.length === 0) return 0
       const m = Math.max(0, ...this.results.map((res) =>
         Math.max(...res.wave_scores.map((v) => v.wave)
         )))
