@@ -36,6 +36,7 @@
               :heat-id="data.heat.id"
               :initial-data="data"
               :api-url="apiUrl"
+              :show-needs="false"
             />
           </b-card>
         </b-col>
@@ -206,7 +207,6 @@ export default {
         .then(response => response.json())
         .then(data => {
           this.activeHeats = data
-          console.log(data)
           this.refreshGuiData()
         })
     },
