@@ -18,7 +18,7 @@
             header-bg-variant="secondary"
             header-text-variant="white"
           >
-            {{ heat.category_id }} {{ heat.name }}
+            {{ heat.category_id }} <br> {{ heat.name }}
             <heat-state
               :heat-id="heat.id"
               :api-url="apiUrl"
@@ -63,9 +63,9 @@ export default {
       c2h.forEach((heats) => {
         heats.sort((a, b) => {
           if (a.round === b.round) {
-            return b.number_in_round - a.number_in_round
+            return a.number_in_round - b.number_in_round
           }
-          return a.round - b.round
+          return b.round - a.round
         })
       })
 

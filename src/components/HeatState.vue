@@ -1,12 +1,12 @@
 <template>
   <div>
     <b-button-group>
-      <b-button v-if="inactive"><b-icon-play /></b-button>
+      <b-button v-if="inactive" variant="success" ><b-icon-play /></b-button>
 
-      <b-button v-if="active || paused"><b-icon-stop /></b-button>
+      <b-button v-if="active || paused" variant="danger" ><b-icon-stop /></b-button>
       <b-button v-if="active"><b-icon-pause /></b-button>
-      <b-button v-if="paused"><b-icon-play /></b-button>
-      <b-button v-if="active || paused"><b-icon-arrow-clockwise /></b-button>
+      <b-button v-if="paused" variant="success"><b-icon-play /></b-button>
+      <b-button v-if="active || paused" variant="outline-secondary" ><b-icon-arrow-clockwise /></b-button>
     </b-button-group>
   </div>
 </template>
