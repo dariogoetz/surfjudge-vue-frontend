@@ -25,6 +25,10 @@
             <b-icon-list-ul />
             Results
           </b-nav-item>
+          <b-nav-item to="/admin">
+            <b-icon-filter-left />
+            Admin
+          </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
 

@@ -10,7 +10,9 @@ import {
   NavbarPlugin,
   NavPlugin,
   LinkPlugin,
-  IconsPlugin
+  IconsPlugin,
+  ButtonPlugin,
+  ButtonGroupPlugin
 } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -24,6 +26,8 @@ Vue.use(TablePlugin)
 Vue.use(NavbarPlugin)
 Vue.use(NavPlugin)
 Vue.use(LinkPlugin)
+Vue.use(ButtonPlugin)
+Vue.use(ButtonGroupPlugin)
 
 Vue.use(IconsPlugin)
 
