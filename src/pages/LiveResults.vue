@@ -43,10 +43,10 @@ export default {
   },
   computed: {
     activeHeatsUrl () {
-      return this.tournament === null ? null : `${this.apiUrl}/active_heats/${this.tournament.id}`
+      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/active_heats`
     },
     categoriesUrl () {
-      return `${this.apiUrl}/categories`
+      return `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
     },
     guiData () {
       if ((this.activeHeats === null) || (this.categories === null)) return []
