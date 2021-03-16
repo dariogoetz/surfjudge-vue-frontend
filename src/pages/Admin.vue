@@ -1,5 +1,6 @@
 <template>
   <div>
+    <login :api-url="apiUrl" />
     <b-container>
       <b-row
         v-for="[round, round_heats] in guiData"
@@ -22,6 +23,7 @@
             <heat-state
               :heat-id="heat.id"
               :api-url="apiUrl"
+              :websocket-url="websocketUrl"
             />
           </b-card>
         </b-col>
@@ -32,10 +34,12 @@
 
 <script>
 import HeatState from '../components/HeatState.vue'
+import Login from '../components/Login.vue'
 
 export default {
   components: {
-    HeatState
+    HeatState,
+    Login
   },
   props: {
     tournament: { type: Object, default: null },

@@ -12,7 +12,12 @@ import {
   LinkPlugin,
   IconsPlugin,
   ButtonPlugin,
-  ButtonGroupPlugin
+  ButtonGroupPlugin,
+  FormPlugin,
+  FormGroupPlugin,
+  FormInputPlugin,
+  InputGroupPlugin,
+  AvatarPlugin
 } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -28,8 +33,12 @@ Vue.use(NavPlugin)
 Vue.use(LinkPlugin)
 Vue.use(ButtonPlugin)
 Vue.use(ButtonGroupPlugin)
-
+Vue.use(FormPlugin)
+Vue.use(FormGroupPlugin)
+Vue.use(FormInputPlugin)
+Vue.use(InputGroupPlugin)
 Vue.use(IconsPlugin)
+Vue.use(AvatarPlugin)
 
 /* eslint-disable-next-line no-new */
 new Vue({

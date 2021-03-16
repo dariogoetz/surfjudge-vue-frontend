@@ -15,30 +15,12 @@
 <script>
 export default {
   props: {
-    url: {
-      type: String,
-      default: null
-    },
-    defaultLabel: {
-      type: String,
-      default: 'Select'
-    },
-    labelKey: {
-      type: String,
-      default: 'name'
-    },
-    selectFirst: {
-      type: Boolean,
-      default: false
-    },
-    right: {
-      type: Boolean,
-      default: false
-    },
-    variant: {
-      type: String,
-      default: 'secondary'
-    }
+    url: { type: String, default: null },
+    defaultLabel: { type: String, default: 'Select' },
+    labelKey: { type: String, default: 'name' },
+    selectFirst: { type: Boolean, default: false },
+    right: { type: Boolean, default: false },
+    variant: { type: String, default: 'secondary' }
   },
   data () {
     return {
