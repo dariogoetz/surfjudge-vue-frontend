@@ -83,6 +83,8 @@ export default {
         })
         .then(data => {
           this.user = null
+          this.username = ''
+          this.password = ''
         })
     }
   }
