@@ -4,8 +4,8 @@
       <b-button v-if="inactive" @click="start_heat" variant="success" ><b-icon-play /></b-button>
 
       <b-button v-if="active || paused" @click="stop_heat" variant="danger" ><b-icon-stop /></b-button>
-      <b-button v-if="active" @click="pause_heat" ><b-icon-pause /></b-button>
-      <b-button v-if="paused" @click="resume_heat" variant="success"><b-icon-play /></b-button>
+      <b-button v-if="active" @click="toggle_pause_heat" ><b-icon-pause /></b-button>
+      <b-button v-if="paused" @click="toggle_pause_heat" variant="success"><b-icon-play /></b-button>
       <b-button v-if="active || paused" @click="reset_heat_time" variant="outline-secondary" ><b-icon-arrow-clockwise /></b-button>
     </b-button-group>
   </div>
@@ -31,8 +31,10 @@ export default {
   },
   computed: {
     getHeatStateUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/state` },
-    startHeatUrl: function () {return `${this.apiUrl}/heats/${this.heatId}/start` },
-    stopHeatUrl: function () {return `${this.apiUrl}/heats/${this.heatId}/stop` },
+    startHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/start` },
+    stopHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/stop` },
+    togglePauseHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/toggle_pause` },
+    resetHeatTimeUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/reset_heat_time` },
     active: function () { return this.heatState === null ? false : this.heatState.state === 'active' },
     paused: function () { return this.heatState === null ? false : this.heatState.state === 'paused' },
     inactive: function () { return this.heatState === null ? true : this.heatState.state === 'inactive' }
@@ -79,23 +81,32 @@ export default {
         })
     },
     start_heat () {
-      console.log('start')
       fetch(this.startHeatUrl, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include' // for CORS in dev setup
       })
         .then(res => this.refresh())
     },
     stop_heat () {
-      console.log('stop')
+      fetch(this.stopHeatUrl, {
+        method: 'POST',
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(res => this.refresh())
     },
-    pause_heat () {
-      console.log('pause')
-    },
-    resume_heat () {
-      console.log('resume')
+    toggle_pause_heat () {
+      fetch(this.togglePauseHeatUrl, {
+        method: 'POST',
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(res => this.refresh())
     },
     reset_heat_time () {
-      console.log('reset heat time')
+      fetch(this.resetHeatTimeUrl, {
+        method: 'POST',
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(res => this.refresh())
     }
   }
 }
