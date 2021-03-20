@@ -13,7 +13,6 @@
         </template>
         <heatchart
           :category-id="category.id"
-          :websocket-url="websocketUrl"
           :api-url="apiUrl"
         />
       </b-card>
@@ -31,7 +30,6 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
   },
   data () {

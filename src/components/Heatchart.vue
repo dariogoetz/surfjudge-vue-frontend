@@ -6,7 +6,7 @@
 import * as d3 from 'd3'
 import parseISOLocal from '../utils/parse_local_date'
 import { lighten } from '../utils/lighten_darken_color'
-import WebSocketClient from '../utils/websocket_client.js'
+import Socket from '../utils/Socket.js'
 
 export default {
   props: {
@@ -33,7 +33,6 @@ export default {
 
     addSymbolOffset: { type: Number, default: 0 },
 
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
 
   },
@@ -266,13 +265,11 @@ export default {
       return res
     }
   },
-  watch: {
-    websocketUrl () {
-      this.initWebsocket()
-    }
-  },
   created () {
     this.initWebSocket()
+  },
+  beforeDestroy () {
+    this.deinitWebSocket()
   },
   mounted () {
     this.fetchHeats()
@@ -319,35 +316,36 @@ export default {
       this.draw()
     },
     initWebSocket () {
-      if (this.websocketUrl === null) return
-      this.ws = new WebSocketClient({
-        url: this.websocketUrl,
-        channels: {
-          results: (jsonMsg) => {
-            const msg = JSON.parse(jsonMsg)
-            if (!('heat_id' in msg)) return
-            const heatId = parseInt(msg.heat_id)
-            if (this.heatsMap.has(heatId)) {
-              this.fetchResultsForHeat(heatId)
-            }
-          },
-          advancements: () => {
-            this.fetchAdvancements()
-          },
-          participants: (jsonMsg) => {
-            const msg = JSON.parse(jsonMsg)
-            if (!('heat_id' in msg)) return
-            const heatId = parseInt(msg.heat_id)
-            if (this.heatsMap.has(heatId)) {
-              this.fetchParticipations()
-            }
-          },
-          active_heats: () => {
-            this.fetchActiveHeats()
-          }
-        },
-        name: 'HeatChart'
-      })
+      Socket.$on('results', this.onResults)
+      Socket.$on('advancements', this.onAdvancements)
+      Socket.$on('participants', this.onParticipants)
+      Socket.$on('active-heats', this.onActiveHeats)
+    },
+    deinitWebSocket () {
+      Socket.$off('results', this.onResults)
+      Socket.$off('advancements', this.onAdvancements)
+      Socket.$off('participants', this.onParticipants)
+      Socket.$off('active-heats', this.onActiveHeats)
+    },
+    onResults (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heatsMap.has(heatId)) {
+        this.fetchResultsForHeat(heatId)
+      }
+    },
+    onAdvancements () {
+      this.fetchAdvancements()
+    },
+    onParticipants (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heatsMap.has(heatId)) {
+        this.fetchParticipations()
+      }
+    },
+    onActiveHeats () {
+      this.fetchActiveHeats()
     },
     fetchHeats () {
       return fetch(this.heatsUrl)

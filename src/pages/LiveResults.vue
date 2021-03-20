@@ -13,7 +13,6 @@
         </template>
         <result-table
           :heat-id="heat.id"
-          :websocket-url="websocketUrl"
           :api-url="apiUrl"
         />
       </b-card>
@@ -23,7 +22,7 @@
 
 <script>
 import ResultTable from '../components/ResultTable.vue'
-import WebSocketClient from '../utils/websocket_client.js'
+import Socket from '../utils/Socket.js'
 
 export default {
   components: {
@@ -31,7 +30,6 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: null }
   },
   data () {
@@ -62,14 +60,14 @@ export default {
   watch: {
     tournament () {
       this.refresh()
-    },
-    websocketUrl () {
-      this.initWebsocket()
     }
   },
   created () {
-    this.initWebsocket()
+    this.initWebSocket()
     this.refresh()
+  },
+  beforeDestroy () {
+    this.deinitWebSocket()
   },
   methods: {
     refresh () {
@@ -89,17 +87,14 @@ export default {
           })
         })
     },
-    initWebsocket () {
-      if (this.websocketUrl === null) return
-      this.ws = new WebSocketClient({
-        url: this.websocketUrl,
-        channels: {
-          active_heats: (jsonMsg) => {
-            this.refresh()
-          }
-        },
-        name: 'LiveResultsPage'
-      })
+    initWebSocket () {
+      Socket.$on('active-heats', this.onActiveHeats)
+    },
+    deinitWebSocket () {
+      Socket.$off('active-heats', this.onActiveHeats)
+    },
+    onActiveHeats () {
+      this.refresh()
     }
   }
 }

@@ -48,7 +48,7 @@
 <script>
 import DropdownMenu from '../components/DropdownMenu.vue'
 import ResultTable from '../components/ResultTable.vue'
-import WebSocketClient from '../utils/websocket_client.js'
+import Socket from '../utils/Socket.js'
 
 export default {
   components: {
@@ -57,7 +57,6 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
   },
   data () {
@@ -111,37 +110,37 @@ export default {
   watch: {
     tournament (val) {
       this.category = null
-    },
-    websocketUrl () {
-      this.initWebsocket()
     }
   },
   created () {
-    this.initWebsocket()
+    this.initWebSocket()
+  },
+  beforeDestroy () {
+    this.deinitWebSocket()
   },
   methods: {
-    initWebsocket () {
-      if (this.websocketUrl === null) return
-      this.ws = new WebSocketClient({
-        url: this.websocketUrl,
-        channels: {
-          results: (jsonMsg) => {
-            const msg = JSON.parse(jsonMsg)
-            if (!('heat_id' in msg)) return
-            const heatId = parseInt(msg.heat_id)
-            if (this.heats.has(heatId)) {
-              this.fetchResultsForHeat(heatId)
-            }
-          },
-          active_heats: () => {
-            this.fetchActiveHeats()
-          },
-          participants: () => {
-            this.fetchParticipations()
-          }
-        },
-        name: 'ResultsPage'
-      })
+    initWebSocket () {
+      Socket.$on('results', this.onResults)
+      Socket.$on('active-heats', this.onActiveHeats)
+      Socket.$on('participants', this.onParticipants)
+    },
+    deinitWebSocket () {
+      Socket.$off('results', this.onResults)
+      Socket.$off('active-heats', this.onActiveHeats)
+      Socket.$off('participants', this.onParticipants)
+    },
+    onResults (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heats.has(heatId)) {
+        this.fetchResultsForHeat(heatId)
+      }
+    },
+    onActiveHeats () {
+      this.fetchActiveHeats()
+    },
+    onParticipants () {
+      this.fetchParticipations()
     },
     select_category (category) {
       this.category = category

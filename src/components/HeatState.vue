@@ -12,7 +12,6 @@
 </template>
 
 <script>
-import WebSocketClient from '../utils/websocket_client.js'
 import Socket from '../utils/Socket.js'
 
 export default {
@@ -21,8 +20,7 @@ export default {
       type: Number,
       default: null
     },
-    apiUrl: { type: String, default: '' },
-    websocketUrl: { type: String, default: null }
+    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -31,53 +29,39 @@ export default {
     }
   },
   computed: {
-    getHeatStateUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/state` },
-    startHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/start` },
-    stopHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/stop` },
-    togglePauseHeatUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/toggle_pause` },
-    resetHeatTimeUrl: function () { return `${this.apiUrl}/heats/${this.heatId}/reset_heat_time` },
-    active: function () { return this.heatState === null ? false : this.heatState.state === 'active' },
-    paused: function () { return this.heatState === null ? false : this.heatState.state === 'paused' },
-    inactive: function () { return this.heatState === null ? true : this.heatState.state === 'inactive' }
+    getHeatStateUrl () { return `${this.apiUrl}/heats/${this.heatId}/state` },
+    startHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/start` },
+    stopHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/stop` },
+    togglePauseHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/toggle_pause` },
+    resetHeatTimeUrl () { return `${this.apiUrl}/heats/${this.heatId}/reset_heat_time` },
+    active () { return this.heatState === null ? false : this.heatState.state === 'active' },
+    paused () { return this.heatState === null ? false : this.heatState.state === 'paused' },
+    inactive () { return this.heatState === null ? true : this.heatState.state === 'inactive' }
   },
   watch: {
     heatId () {
       this.refresh()
-    },
-    websocketUrl () {
-      this.initWebSocket()
     }
   },
   created () {
     this.initWebSocket()
     this.refresh()
   },
+  beforeDestroy () {
+    this.deinitWebSocket()
+  },
   methods: {
     initWebSocket () {
-      Socket.$on("active-heats", (msg) => {
-        if (!('heat_id' in msg)) return
-        const heatId = parseInt(msg.heat_id)
-        if (this.heatId === heatId) {
-          this.refresh()
-        }
-      )
-      return
-
-      if (this.websocketUrl) {
-        this.ws = new WebSocketClient({
-          url: this.websocketUrl,
-          channels: {
-            active_heats: (jsonMsg) => {
-              const msg = JSON.parse(jsonMsg)
-              if (!('heat_id' in msg)) return
-              const heatId = parseInt(msg.heat_id)
-              if (this.heatId === heatId) {
-                this.refresh()
-              }
-            }
-          },
-          name: 'HeatState'
-        })
+      Socket.$on('active-heats', this.onActiveHeats)
+    },
+    deinitWebSocket () {
+      Socket.$off('active-heats', this.onActiveHeats)
+    },
+    onActiveHeats (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heatId === heatId) {
+        this.refresh()
       }
     },
     refresh () {

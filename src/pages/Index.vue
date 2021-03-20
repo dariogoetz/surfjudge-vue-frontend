@@ -46,13 +46,13 @@
 
     <router-view
       :tournament="tournament"
-      :websocket-url="config.websocket_url"
       :api-url="apiUrl"
     />
   </div>
 </template>
 
 <script>
+import Socket from '../utils/Socket.js'
 import DropdownMenu from '../components/DropdownMenu.vue'
 
 export default {
@@ -89,7 +89,10 @@ export default {
     fetchConfig () {
       fetch(this.configUrl)
         .then((response) => response.json())
-        .then((data) => { this.config = data })
+        .then((data) => {
+          this.config = data
+          Socket.init(data.websocket_url)
+        })
     }
   }
 }

@@ -23,7 +23,6 @@
             <heat-state
               :heat-id="heat.id"
               :api-url="apiUrl"
-              :websocket-url="websocketUrl"
             />
           </b-card>
         </b-col>
@@ -43,7 +42,6 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
   },
   data () {

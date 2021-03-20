@@ -15,7 +15,7 @@
 
 <script>
 import { lighten } from '../utils/lighten_darken_color'
-import WebSocketClient from '../utils/websocket_client.js'
+import Socket from '../utils/Socket.js'
 
 export default {
   props: {
@@ -25,7 +25,6 @@ export default {
     showNeedsSecond: { type: Boolean, default: true },
     lastNameOnNewline: { type: Boolean, default: true },
     initialData: { type: Object, default: null },
-    websocketUrl: { type: String, default: null },
     apiUrl: { type: String, default: '' }
   },
   data () {
@@ -202,9 +201,6 @@ export default {
       if (val.heat) this.heat = val.heat
       if (val.results) this.results = val.results
       if (val.participations) this.participations = val.participations
-    },
-    websocketUrl () {
-      this.initWebSocket()
     }
   },
   created () {
@@ -219,26 +215,30 @@ export default {
     }
     this.initWebSocket()
   },
+  beforeDestroy () {
+    this.deinitWebSocket()
+  },
   methods: {
     initWebSocket () {
-      if (this.websocketUrl) {
-        this.ws = new WebSocketClient({
-          url: this.websocketUrl,
-          channels: {
-            results: (jsonMsg) => {
-              const msg = JSON.parse(jsonMsg)
-              if (!('heat_id' in msg)) return
-              const heatId = parseInt(msg.heat_id)
-              if (this.heat.id === heatId) {
-                this.fetchResults()
-              }
-            },
-            participants: () => {
-              this.fetchParticipations()
-            }
-          },
-          name: 'ResultsTable'
-        })
+      Socket.$on('results', this.onResults)
+      Socket.$on('participants', this.onParticipants)
+    },
+    deinitWebSocket () {
+      Socket.$off('results', this.onResults)
+      Socket.$off('participants', this.onParticipants)
+    },
+    onResults (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heat.id === heatId) {
+        this.fetchResults()
+      }
+    },
+    onParticipants (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heat.id === heatId) {
+        this.fetchParticipations()
       }
     },
     fetchResults () {
