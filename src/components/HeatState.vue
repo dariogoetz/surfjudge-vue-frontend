@@ -13,6 +13,7 @@
 
 <script>
 import WebSocketClient from '../utils/websocket_client.js'
+import Socket from '../utils/Socket.js'
 
 export default {
   props: {
@@ -53,6 +54,15 @@ export default {
   },
   methods: {
     initWebSocket () {
+      Socket.$on("active-heats", (msg) => {
+        if (!('heat_id' in msg)) return
+        const heatId = parseInt(msg.heat_id)
+        if (this.heatId === heatId) {
+          this.refresh()
+        }
+      )
+      return
+
       if (this.websocketUrl) {
         this.ws = new WebSocketClient({
           url: this.websocketUrl,
