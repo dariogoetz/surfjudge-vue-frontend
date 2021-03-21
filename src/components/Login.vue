@@ -68,6 +68,8 @@ export default {
         })
         .then(data => {
           this.user = data
+          this.username = ''
+          this.password = ''
         })
     },
     logout () {
@@ -76,15 +78,13 @@ export default {
         credentials: 'include' // for CORS in dev setup
       })
         .then(response => {
+          this.user = null
+          this.username = ''
+          this.password = ''
           if (!response.ok) {
             console.log(response.statusText)
           }
           return response.json()
-        })
-        .then(data => {
-          this.user = null
-          this.username = ''
-          this.password = ''
         })
     }
   }

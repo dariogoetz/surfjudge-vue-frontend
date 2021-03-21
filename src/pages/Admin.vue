@@ -1,12 +1,17 @@
 <template>
   <div>
-    <login :api-url="apiUrl" />
+    <b-row align-h="center">
+      <b-col cols="8">
+        <b-card>
+          <login :api-url="apiUrl" />
+        </b-card>
+      </b-col>
+    </b-row>
     <b-container>
       <b-row
         v-for="[round, round_heats] in guiData"
         :key="round[0]"
-        cols-md="1"
-        cols-xl="1"
+        cols="3"
         class="mb-sm-3"
       >
         <b-col
