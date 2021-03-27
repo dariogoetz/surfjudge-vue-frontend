@@ -52,7 +52,7 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      __API_PATH__: JSON.stringify('/public')
+      __API_PATH__: JSON.stringify('')
     }),
     new MiniCssExtractPlugin({
       filename: 'main.css'
