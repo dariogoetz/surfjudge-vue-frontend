@@ -1,54 +1,56 @@
 <template>
   <div>
-    <b-navbar toggleable="lg" type="dark" variant="dark">
-      <b-navbar-brand href="#">
-        <b-link to="/" class="navbar-brand">
-          <img src="/static/img/SurfjudgeLogo.png">
-        </b-link>
-        <b-link to="/" class="navbar-brand">
-          <img src="/static/img/DWV_Logo_weiß_small.png">
-        </b-link>
-      </b-navbar-brand>
-      <b-navbar-toggle target="nav-collapse" />
+    <div v-if="apiReady">
+      <b-navbar toggleable="lg" type="dark" variant="dark">
+        <b-navbar-brand href="#">
+          <b-link to="/" class="navbar-brand">
+            <img src="/static/img/SurfjudgeLogo.png">
+          </b-link>
+          <b-link to="/" class="navbar-brand">
+            <img src="/static/img/DWV_Logo_weiß_small.png">
+          </b-link>
+        </b-navbar-brand>
+        <b-navbar-toggle target="nav-collapse" />
 
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
-          <b-nav-item to="/live_results">
-            <b-icon-filter-left />
-            Live Results
-          </b-nav-item>
-          <b-nav-item to="/heatcharts">
-            <b-icon-diagram3 />
-            Heatcharts
-          </b-nav-item>
-          <b-nav-item to="/results">
-            <b-icon-list-ul />
-            Results
-          </b-nav-item>
-          <b-nav-item to="/admin">
-            <b-icon-filter-left />
-            Admin
-          </b-nav-item>
+        <b-collapse id="nav-collapse" is-nav>
+          <b-navbar-nav>
+            <b-nav-item to="/live_results">
+              <b-icon-filter-left />
+              Live Results
+            </b-nav-item>
+            <b-nav-item to="/heatcharts">
+              <b-icon-diagram3 />
+              Heatcharts
+            </b-nav-item>
+            <b-nav-item to="/results">
+              <b-icon-list-ul />
+              Results
+            </b-nav-item>
+            <b-nav-item to="/admin">
+              <b-icon-filter-left />
+              Admin
+            </b-nav-item>
+          </b-navbar-nav>
+        </b-collapse>
+
+        <b-navbar-nav class="ml-auto">
+          <dropdown-menu
+            :url="tournamentsUrl"
+            default-label="Select Tournament"
+            variant="dark"
+            select-first
+            right
+            @selected="selectTournament"
+          />
         </b-navbar-nav>
-      </b-collapse>
+      </b-navbar>
 
-      <b-navbar-nav class="ml-auto">
-        <dropdown-menu
-          :url="tournamentsUrl"
-          default-label="Select Tournament"
-          variant="dark"
-          select-first
-          right
-          @selected="selectTournament"
-        />
-      </b-navbar-nav>
-    </b-navbar>
-
-    <router-view
-      :tournament="tournament"
-      :public-api-url="publicApiUrl"
-      :private-api-url="privateApiUrl"
-    />
+      <router-view
+        :tournament="tournament"
+        :public-api-url="publicApiUrl"
+        :private-api-url="privateApiUrl"
+      />
+    </div>
   </div>
 </template>
 
@@ -74,6 +76,9 @@ export default {
     }
   },
   computed: {
+    apiReady () {
+      return this.config.public_path !== null || this.config.private_path !== null
+    },
     configUrl () {
       return `${this.baseUrl}/config`
     },
