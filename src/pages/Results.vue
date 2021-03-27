@@ -35,7 +35,7 @@
             <result-table
               :heat-id="data.heat.id"
               :initial-data="data"
-              :api-url="apiUrl"
+              :api-url="publicApiUrl"
               :show-needs="false"
             />
           </b-card>
@@ -57,7 +57,7 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    apiUrl: { type: String, default: '' }
+    publicApiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -72,19 +72,19 @@ export default {
   },
   computed: {
     categoriesUrl () {
-      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
+      return this.tournament === null ? null : `${this.publicApiUrl}/tournaments/${this.tournament.id}/categories`
     },
     categoryHeatsUrl () {
-      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/heats`
+      return this.category === null ? null : `${this.publicApiUrl}/categories/${this.category.id}/heats`
     },
     categoryResultsUrl () {
-      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/results`
+      return this.category === null ? null : `${this.publicApiUrl}/categories/${this.category.id}/results`
     },
     categoryParticipationsUrl () {
-      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/participations`
+      return this.category === null ? null : `${this.publicApiUrl}/categories/${this.category.id}/participations`
     },
     categoryActiveHeatsUrl () {
-      return this.category === null ? null : `${this.apiUrl}/categories/${this.category.id}/active_heats`
+      return this.category === null ? null : `${this.publicApiUrl}/categories/${this.category.id}/active_heats`
     },
     guiData () {
       const r2h = new Map()
@@ -156,7 +156,7 @@ export default {
       this.fetchActiveHeats()
     },
     heatResultsUrl (heatId) {
-      return `${this.apiUrl}/heats/${heatId}/results`
+      return `${this.publicApiUrl}/heats/${heatId}/results`
     },
     fetchHeats () {
       return fetch(this.categoryHeatsUrl)

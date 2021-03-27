@@ -13,7 +13,7 @@
         </template>
         <result-table
           :heat-id="heat.id"
-          :api-url="apiUrl"
+          :api-url="publicApiUrl"
         />
       </b-card>
     </b-container>
@@ -30,7 +30,7 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    apiUrl: { type: String, default: null }
+    publicApiUrl: { type: String, default: null }
   },
   data () {
     return {
@@ -41,10 +41,10 @@ export default {
   },
   computed: {
     activeHeatsUrl () {
-      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/active_heats`
+      return this.tournament === null ? null : `${this.publicApiUrl}/tournaments/${this.tournament.id}/active_heats`
     },
     categoriesUrl () {
-      return `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
+      return `${this.publicApiUrl}/tournaments/${this.tournament.id}/categories`
     },
     guiData () {
       if ((this.activeHeats === null) || (this.categories === null)) return []

@@ -46,7 +46,8 @@
 
     <router-view
       :tournament="tournament"
-      :api-url="apiUrl"
+      :public-api-url="publicApiUrl"
+      :private-api-url="privateApiUrl"
     />
   </div>
 </template>
@@ -60,23 +61,30 @@ export default {
     DropdownMenu
   },
   props: {
-    apiUrl: { type: String, default: '' }
+    baseUrl: { type: String, default: '' }
   },
   data () {
     return {
       tournament: null,
       config: {
         websocket_url: null,
-        base_url: ''
+        public_path: null,
+        private_path: null
       }
     }
   },
   computed: {
     configUrl () {
-      return `${this.apiUrl}/config`
+      return `${this.baseUrl}/config`
+    },
+    publicApiUrl () {
+      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}`
+    },
+    privateApiUrl () {
+      return this.config.private_path === null ? '' : `${this.baseUrl}${this.config.private_path}`
     },
     tournamentsUrl () {
-      return `${this.apiUrl}/tournaments`
+      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}/tournaments`
     }
   },
   created () {

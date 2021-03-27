@@ -13,7 +13,7 @@
         </template>
         <heatchart
           :category-id="category.id"
-          :api-url="apiUrl"
+          :api-url="publicApiUrl"
         />
       </b-card>
       <hr>
@@ -30,7 +30,7 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    apiUrl: { type: String, default: '' }
+    publicApiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     categoriesUrl () {
-      return this.tournament === null ? null : `${this.apiUrl}/tournaments/${this.tournament.id}/categories`
+      return this.tournament === null ? null : `${this.publicApiUrl}/tournaments/${this.tournament.id}/categories`
     }
   },
   watch: {

@@ -20,7 +20,8 @@ export default {
       type: Number,
       default: null
     },
-    apiUrl: { type: String, default: '' }
+    publicApiUrl: { type: String, default: '' },
+    privateApiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -29,11 +30,11 @@ export default {
     }
   },
   computed: {
-    getHeatStateUrl () { return `${this.apiUrl}/heats/${this.heatId}/state` },
-    startHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/start` },
-    stopHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/stop` },
-    togglePauseHeatUrl () { return `${this.apiUrl}/heats/${this.heatId}/toggle_pause` },
-    resetHeatTimeUrl () { return `${this.apiUrl}/heats/${this.heatId}/reset_heat_time` },
+    getHeatStateUrl () { return `${this.publicApiUrl}/heats/${this.heatId}/state` },
+    startHeatUrl () { return `${this.privateApiUrl}/heats/${this.heatId}/start` },
+    stopHeatUrl () { return `${this.privateApiUrl}/heats/${this.heatId}/stop` },
+    togglePauseHeatUrl () { return `${this.privateApiUrl}/heats/${this.heatId}/toggle_pause` },
+    resetHeatTimeUrl () { return `${this.privateApiUrl}/heats/${this.heatId}/reset_heat_time` },
     active () { return this.heatState === null ? false : this.heatState.state === 'active' },
     paused () { return this.heatState === null ? false : this.heatState.state === 'paused' },
     inactive () { return this.heatState === null ? true : this.heatState.state === 'inactive' }

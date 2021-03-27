@@ -3,7 +3,7 @@
     <b-row align-h="center">
       <b-col cols="8">
         <b-card>
-          <login :api-url="apiUrl" />
+          <login :api-url="privateApiUrl" />
         </b-card>
       </b-col>
     </b-row>
@@ -27,7 +27,8 @@
             {{ heat.category_id }} <br> {{ heat.name }}
             <heat-state
               :heat-id="heat.id"
-              :api-url="apiUrl"
+              :public-api-url="publicApiUrl"
+              :private-api-url="privateApiUrl"
             />
           </b-card>
         </b-col>
@@ -47,7 +48,8 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    apiUrl: { type: String, default: '' }
+    publicApiUrl: { type: String, default: '' },
+    privateApiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -56,7 +58,7 @@ export default {
   },
   computed: {
     heatsUrl () {
-      return this.tournament === null ? null : `${this.apiUrl}/heats`
+      return this.tournament === null ? null : `${this.publicApiUrl}/heats`
     },
     guiData () {
       const c2h = new Map()
