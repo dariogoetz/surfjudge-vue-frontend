@@ -33,9 +33,9 @@ export default {
     }
   },
   computed: {
-    meUrl () { return `http://localhost:8081/private/auth/me` },
-    loginUrl () { return `http://localhost:8081/private/auth/login` },
-    logoutUrl () { return `http://localhost:8081/private/auth/logout` },
+    meUrl () { return `${this.apiUrl}/auth/me` },
+    loginUrl () { return `${this.apiUrl}/auth/login` },
+    logoutUrl () { return `${this.apiUrl}/auth/logout` },
     loggedIn () { return this.user !== null }
   },
   watch: {
