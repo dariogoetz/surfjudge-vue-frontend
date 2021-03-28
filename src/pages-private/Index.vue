@@ -26,6 +26,10 @@
               <b-icon-list-ul />
               Results
             </b-nav-item>
+            <b-nav-item to="/admin">
+              <b-icon-filter-left />
+              Admin
+            </b-nav-item>
           </b-navbar-nav>
         </b-collapse>
 
@@ -44,6 +48,7 @@
       <router-view
         :tournament="tournament"
         :public-api-url="publicApiUrl"
+        :private-api-url="privateApiUrl"
       />
     </div>
   </div>
