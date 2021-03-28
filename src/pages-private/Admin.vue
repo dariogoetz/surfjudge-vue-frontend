@@ -1,13 +1,6 @@
 <template>
   <div>
-    <b-row align-h="center">
-      <b-col cols="8">
-        <b-card>
-          <login :api-url="privateApiUrl" />
-        </b-card>
-      </b-col>
-    </b-row>
-    <b-container>
+    <b-container v-if="authenticated !== null">
       <b-row
         v-for="[round, round_heats] in guiData"
         :key="round[0]"
@@ -39,14 +32,13 @@
 
 <script>
 import HeatState from '../components/HeatState.vue'
-import Login from '../components/Login.vue'
 
 export default {
   components: {
-    HeatState,
-    Login
+    HeatState
   },
   props: {
+    authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
     publicApiUrl: { type: String, default: '' },
     privateApiUrl: { type: String, default: '' }

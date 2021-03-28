@@ -34,6 +34,10 @@
         </b-collapse>
 
         <b-navbar-nav class="ml-auto">
+          <login @authenticated="setAuthenticated" :api-url="privateApiUrl" />
+        </b-navbar-nav>
+
+        <b-navbar-nav class="ml-auto">
           <dropdown-menu
             :url="tournamentsUrl"
             default-label="Select Tournament"
@@ -47,6 +51,7 @@
 
       <router-view
         :tournament="tournament"
+        :authenticated="authenticated"
         :public-api-url="publicApiUrl"
         :private-api-url="privateApiUrl"
       />
@@ -57,16 +62,19 @@
 <script>
 import Socket from '../utils/Socket.js'
 import DropdownMenu from '../components/DropdownMenu.vue'
+import Login from '../components/Login.vue'
 
 export default {
   components: {
-    DropdownMenu
+    DropdownMenu,
+    Login
   },
   props: {
     baseUrl: { type: String, default: '' }
   },
   data () {
     return {
+      authenticated: null,
       tournament: null,
       config: {
         websocket_url: null,
@@ -96,6 +104,9 @@ export default {
     this.fetchConfig()
   },
   methods: {
+    setAuthenticated (data) {
+      this.authenticated = data
+    },
     selectTournament (tournament) {
       this.tournament = tournament
     },

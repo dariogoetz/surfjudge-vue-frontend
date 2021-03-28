@@ -47,6 +47,7 @@ export default {
     })
       .then(response => response.json())
       .then(data => {
+        this.$emit('authenticated', data)
         this.user = data
         this.initialized = true
       })
@@ -67,6 +68,7 @@ export default {
           return response.json()
         })
         .then(data => {
+          this.$emit('authenticated', data)
           this.user = data
           this.username = ''
           this.password = ''
@@ -78,6 +80,7 @@ export default {
         credentials: 'include' // for CORS in dev setup
       })
         .then(response => {
+          this.$emit('authenticated', null)
           this.user = null
           this.username = ''
           this.password = ''
