@@ -6,8 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack serve --config build/webpack.config.dev.js",
-    "dev-private": "webpack serve --config build/webpack.config.dev-private.js",
+    "dev-admin": "webpack serve --config build/webpack.config.dev-admin.js",
+    "dev-judging": "webpack serve --config build/webpack.config.dev-judging.js",
     "prod": "webpack --config build/webpack.config.prod.js",
+    "prod-admin": "webpack --config build/webpack.config.prod-admin.js",
+    "prod-judging": "webpack --config build/webpack.config.prod-judging.js",
     "lint": "eslint --ext .js,.vue src",
     "lint:fix": "eslint --ext .js,.vue src --fix"
   },

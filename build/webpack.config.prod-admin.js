@@ -17,7 +17,7 @@ module.exports = {
   mode: 'production',
   // index.js is standard, so setting the entry is not required
   entry: [
-    './src/index-private.js'
+    './src/index-admin.js'
   ],
   output: {
     publicPath: '/static/app',
