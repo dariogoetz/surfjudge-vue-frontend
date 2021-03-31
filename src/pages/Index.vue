@@ -65,23 +65,19 @@ export default {
       tournament: null,
       config: {
         websocket_url: null,
-        public_path: null,
-        private_path: null
+        public_path: null
       }
     }
   },
   computed: {
     apiReady () {
-      return this.config.public_path !== null || this.config.private_path !== null
+      return this.config.public_path !== null
     },
     configUrl () {
       return `${this.baseUrl}/config`
     },
     publicApiUrl () {
       return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}`
-    },
-    privateApiUrl () {
-      return this.config.private_path === null ? '' : `${this.baseUrl}${this.config.private_path}`
     },
     tournamentsUrl () {
       return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}/tournaments`

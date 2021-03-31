@@ -21,7 +21,7 @@
             <heat-state
               :heat-id="heat.id"
               :public-api-url="publicApiUrl"
-              :private-api-url="privateApiUrl"
+              :admin-api-url="adminApiUrl"
             />
           </b-card>
         </b-col>
@@ -41,7 +41,8 @@ export default {
     authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
     publicApiUrl: { type: String, default: '' },
-    privateApiUrl: { type: String, default: '' }
+    authApiUrl: { type: String, default: '' },
+    adminApiUrl: { type: String, default: '' }
   },
   data () {
     return {

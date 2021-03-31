@@ -30,7 +30,7 @@
         </b-collapse>
 
         <b-navbar-nav class="ml-auto">
-          <login @authenticated="setAuthenticated" :api-url="privateApiUrl" />
+          <login @authenticated="setAuthenticated" :api-url="authApiUrl" />
         </b-navbar-nav>
 
         <b-navbar-nav class="ml-auto">
@@ -49,7 +49,8 @@
         :tournament="tournament"
         :authenticated="authenticated"
         :public-api-url="publicApiUrl"
-        :private-api-url="privateApiUrl"
+        :auth-api-url="authApiUrl"
+        :judging-api-url="judgingApiUrl"
       />
     </div>
   </div>
@@ -74,14 +75,14 @@ export default {
       tournament: null,
       config: {
         websocket_url: null,
-        public_path: null,
-        private_path: null
+        auth_path: null,
+        judging_path: null
       }
     }
   },
   computed: {
     apiReady () {
-      return this.config.public_path !== null || this.config.private_path !== null
+      return this.config.public_path !== null
     },
     configUrl () {
       return `${this.baseUrl}/config`
@@ -89,8 +90,11 @@ export default {
     publicApiUrl () {
       return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}`
     },
-    privateApiUrl () {
-      return this.config.private_path === null ? '' : `${this.baseUrl}${this.config.private_path}`
+    authApiUrl () {
+      return this.config.auth_path === null ? '' : `${this.baseUrl}${this.config.auth_path}`
+    },
+    judgingApiUrl () {
+      return this.config.judging_path === null ? '' : `${this.baseUrl}${this.config.judging_path}`
     },
     tournamentsUrl () {
       return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}/tournaments`

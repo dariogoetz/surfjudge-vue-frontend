@@ -33,9 +33,9 @@ export default {
     }
   },
   computed: {
-    meUrl () { return `${this.apiUrl}/auth/me` },
-    loginUrl () { return `${this.apiUrl}/auth/login` },
-    logoutUrl () { return `${this.apiUrl}/auth/logout` },
+    meUrl () { return `${this.apiUrl}/me` },
+    loginUrl () { return `${this.apiUrl}/login` },
+    logoutUrl () { return `${this.apiUrl}/logout` },
     loggedIn () { return this.user !== null }
   },
   watch: {
