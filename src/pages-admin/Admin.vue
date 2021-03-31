@@ -41,7 +41,6 @@ export default {
     authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
     publicApiUrl: { type: String, default: '' },
-    authApiUrl: { type: String, default: '' },
     adminApiUrl: { type: String, default: '' }
   },
   data () {

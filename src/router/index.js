@@ -1,11 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Index from '../pages/Index.vue'
 
-// import routes lazily
-// const Results = () => import('../pages/Results.vue')
-// const LiveResults = () => import('../pages/LiveResults.vue')
-// const Heatcharts = () => import('../pages/Heatcharts.vue')
+import Index from '../pages/Index.vue'
 import Results from '../pages/Results.vue'
 import LiveResults from '../pages/LiveResults.vue'
 import Heatcharts from '../pages/Heatcharts.vue'

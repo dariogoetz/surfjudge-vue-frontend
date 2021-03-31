@@ -30,6 +30,10 @@
               <b-icon-filter-left />
               Admin
             </b-nav-item>
+            <b-nav-item to="/judge_panel">
+              <b-icon-filter-left />
+              Judge Panel
+            </b-nav-item>
           </b-navbar-nav>
         </b-collapse>
 

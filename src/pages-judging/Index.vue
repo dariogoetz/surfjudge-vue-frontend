@@ -14,17 +14,9 @@
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item to="/live_results">
+            <b-nav-item to="/">
               <b-icon-filter-left />
-              Live Results
-            </b-nav-item>
-            <b-nav-item to="/heatcharts">
-              <b-icon-diagram3 />
-              Heatcharts
-            </b-nav-item>
-            <b-nav-item to="/results">
-              <b-icon-list-ul />
-              Results
+              Judge Panel
             </b-nav-item>
           </b-navbar-nav>
         </b-collapse>
