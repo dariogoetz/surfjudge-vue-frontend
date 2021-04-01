@@ -5,11 +5,16 @@
     </b-container>
     <div v-else>
       It is on!
+      {{ scoresData }}
+      <br>
+      {{ heatData }}
     </div>
   </div>
 </template>
 
 <script>
+import Socket from '../utils/Socket.js'
+
 export default {
   props: {
     authenticated: { type: Object, default: null },
@@ -19,7 +24,9 @@ export default {
   },
   data () {
     return {
-      activeHeats: []
+      activeHeats: [],
+      heatData: null,
+      scoresData: null
     }
   },
   computed: {
@@ -27,14 +34,59 @@ export default {
     active () { return this.activeHeats.length === 0 }
   },
   created () {
-    fetch(this.activeAssignementsUrl, {
-      credentials: 'include' // for CORS in dev setup
-    })
-      .then(response => response.json())
-      .then(data => {
-        this.activeHeats = data
-      })
+    this.initWebSocket()
+    this.refreshActiveAssignments()
   },
-  methods: {}
+  beforeDestroy () {
+    this.deinitWebSocket()
+  },
+  methods: {
+    heatsUrl (heatId) { return `${this.publicApiUrl}/heats/${heatId}` },
+    scoresUrl (heatId) { return `${this.judgingApiUrl}/heats/${heatId}/judges/${this.authenticated.id}/scores` },
+    initWebSocket () {
+      Socket.$on('active-heats', this.onActiveHeats)
+    },
+    deinitWebSocket () {
+      Socket.$off('active-heats', this.onActiveHeats)
+    },
+    onActiveHeats () {
+      this.refreshActiveAssignments()
+    },
+    refreshActiveAssignments () {
+      fetch(this.activeAssignementsUrl, {
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.activeHeats = data
+          this.refreshHeat()
+        })
+    },
+    refreshHeat () {
+      if (this.activeHeats.length !== 1) {
+        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
+        this.heatData = null
+        this.scores = null
+        return
+      }
+
+      const heatId = this.activeHeats[0].id
+      fetch(this.heatsUrl(heatId), {
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.heatData = data
+        })
+
+      fetch(this.scoresUrl(heatId), {
+        credentials: 'include' // for CORS in dev setup
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.scoresData = data
+        })
+    }
+  }
 }
 </script>
