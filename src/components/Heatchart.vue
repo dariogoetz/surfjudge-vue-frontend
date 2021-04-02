@@ -316,12 +316,14 @@ export default {
       this.draw()
     },
     initWebSocket () {
+      Socket.$on('heats', this.onHeats)
       Socket.$on('results', this.onResults)
       Socket.$on('advancements', this.onAdvancements)
       Socket.$on('participants', this.onParticipants)
       Socket.$on('active-heats', this.onActiveHeats)
     },
     deinitWebSocket () {
+      Socket.$off('heats', this.onHeats)
       Socket.$off('results', this.onResults)
       Socket.$off('advancements', this.onAdvancements)
       Socket.$off('participants', this.onParticipants)
@@ -346,6 +348,13 @@ export default {
     },
     onActiveHeats () {
       this.fetchActiveHeats()
+    },
+    onHeats (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heatsMap.has(heatId)) {
+        this.fetchHeats()
+      }
     },
     fetchHeats () {
       return fetch(this.heatsUrl)

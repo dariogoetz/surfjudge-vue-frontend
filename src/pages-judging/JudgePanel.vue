@@ -44,13 +44,14 @@ export default {
     heatsUrl (heatId) { return `${this.publicApiUrl}/heats/${heatId}` },
     scoresUrl (heatId) { return `${this.judgingApiUrl}/heats/${heatId}/judges/${this.authenticated.id}/scores` },
     initWebSocket () {
-      Socket.$on('active-heats', this.onActiveHeats)
+      Socket.$on('active-heats', this.refreshActiveAssignments)
+      Socket.$on('scores', this.refreshScores)
+      Socket.$on('heats', this.refreshHeat)
     },
     deinitWebSocket () {
-      Socket.$off('active-heats', this.onActiveHeats)
-    },
-    onActiveHeats () {
-      this.refreshActiveAssignments()
+      Socket.$off('active-heats', this.refreshActiveAssignments)
+      Socket.$off('scores', this.refreshScores)
+      Socket.$off('heats', this.refreshHeat)
     },
     refreshActiveAssignments () {
       fetch(this.activeAssignementsUrl, {
@@ -60,6 +61,7 @@ export default {
         .then(data => {
           this.activeHeats = data
           this.refreshHeat()
+          this.refreshScores()
         })
     },
     refreshHeat () {
@@ -78,7 +80,16 @@ export default {
         .then(data => {
           this.heatData = data
         })
+    },
+    refreshScores () {
+      if (this.activeHeats.length !== 1) {
+        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
+        this.heatData = null
+        this.scores = null
+        return
+      }
 
+      const heatId = this.activeHeats[0].id
       fetch(this.scoresUrl(heatId), {
         credentials: 'include' // for CORS in dev setup
       })

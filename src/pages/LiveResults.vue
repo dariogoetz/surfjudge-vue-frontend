@@ -89,8 +89,10 @@ export default {
     },
     initWebSocket () {
       Socket.$on('active-heats', this.onActiveHeats)
+      Socket.$on('heats', this.onActiveHeats)
     },
     deinitWebSocket () {
+      Socket.$off('heats', this.onActiveHeats)
       Socket.$off('active-heats', this.onActiveHeats)
     },
     onActiveHeats () {
