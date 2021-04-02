@@ -41,8 +41,6 @@ export default {
     logoutUrl () { return `${this.apiUrl}/logout` },
     loggedIn () { return this.user !== null }
   },
-  watch: {
-  },
   created () {
     // fetch meUrl into this.user
     fetch(this.meUrl, {
@@ -66,8 +64,16 @@ export default {
         credentials: 'include' // for CORS in dev setup
       })
         .then(response => {
+          this.showOverlay = false
           if (!response.ok) {
             console.log(response.statusText)
+            this.$bvToast.toast('Login failed', {
+              title: 'Message',
+              autoHideDelay: 2000,
+              appendToast: true,
+              variant: 'danger',
+              solid: true
+            })
           }
           return response.json()
         })
@@ -76,10 +82,10 @@ export default {
           this.user = data
           this.username = ''
           this.password = ''
-          this.showOverlay = false
         })
     },
     logout () {
+      this.showOverlay = true
       fetch(this.logoutUrl, {
         method: 'POST',
         credentials: 'include' // for CORS in dev setup
@@ -89,8 +95,16 @@ export default {
           this.user = null
           this.username = ''
           this.password = ''
+          this.showOverlay = false
           if (!response.ok) {
             console.log(response.statusText)
+            this.$bvToast.toast('Logout failed', {
+              title: 'Message',
+              autoHideDelay: 2000,
+              appendToast: true,
+              variant: 'danger',
+              solid: true
+            })
           }
           return response.json()
         })
