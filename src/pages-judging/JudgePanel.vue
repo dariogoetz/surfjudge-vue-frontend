@@ -4,6 +4,10 @@
       Waiting
     </b-container>
     <div v-else>
+      <b-table
+        :items="rows"
+        :fields="fields"
+      />
       It is on!
       {{ scoresData }}
       <br>
@@ -31,7 +35,15 @@ export default {
   },
   computed: {
     activeAssignementsUrl () { return `${this.judgingApiUrl}/active_judge_assignments` },
-    active () { return this.activeHeats.length === 0 }
+    active () { return this.activeHeats.length === 0 },
+    rows () {},
+    fields () {
+        {
+          key: 'surfer',
+          tdClass: 'surfer_cell',
+          thClass: 'surfer_header'
+        },      
+    },
   },
   created () {
     this.initWebSocket()
