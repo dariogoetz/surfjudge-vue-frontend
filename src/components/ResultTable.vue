@@ -222,10 +222,12 @@ export default {
     initWebSocket () {
       Socket.$on('results', this.onResults)
       Socket.$on('participants', this.onParticipants)
+      Socket.$on('heats', this.onHeats)
     },
     deinitWebSocket () {
       Socket.$off('results', this.onResults)
       Socket.$off('participants', this.onParticipants)
+      Socket.$off('heats', this.onHeats)
     },
     onResults (msg) {
       if (!('heat_id' in msg)) return
@@ -239,6 +241,13 @@ export default {
       const heatId = parseInt(msg.heat_id)
       if (this.heat.id === heatId) {
         this.fetchParticipations()
+      }
+    },
+    onHeats (msg) {
+      if (!('heat_id' in msg)) return
+      const heatId = parseInt(msg.heat_id)
+      if (this.heat.id === heatId) {
+        this.fetchHeat()
       }
     },
     fetchResults () {

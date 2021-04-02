@@ -9,7 +9,7 @@ const emitter = new Vue({
   },
   methods: {
     init (websocketUrl) {
-      const channelNames = ['active_heats', 'results', 'participants', 'advancements']
+      const channelNames = ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests']
 
       const channels = {}
       channelNames.forEach(channel => {

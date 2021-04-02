@@ -120,11 +120,13 @@ export default {
   },
   methods: {
     initWebSocket () {
+      Socket.$on('heats', this.onHeats)
       Socket.$on('results', this.onResults)
       Socket.$on('active-heats', this.onActiveHeats)
       Socket.$on('participants', this.onParticipants)
     },
     deinitWebSocket () {
+      Socket.$off('heats', this.onHeats)
       Socket.$off('results', this.onResults)
       Socket.$off('active-heats', this.onActiveHeats)
       Socket.$off('participants', this.onParticipants)
@@ -141,6 +143,9 @@ export default {
     },
     onParticipants () {
       this.fetchParticipations()
+    },
+    onHeats () {
+      this.fetchHeats()
     },
     select_category (category) {
       this.category = category
