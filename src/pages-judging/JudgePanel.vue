@@ -12,14 +12,26 @@
           :items="rows"
           :fields="fields"
           :tbody-tr-attr="rowAttr"
-          @row-clicked="rowClicked"
           bordered
+          @row-clicked="rowClicked"
         />
         {{ scoresData }}
         <br>
         {{ heatData }}
         <br>
         {{ participationsData }}
+        <b-modal
+          id="enter-score-modal"
+          v-model="showModal"
+          size="xl"
+          hide-header
+          hide-footer
+        >
+          <edit-score
+            :authenticated="authenticated"
+            :edit-score="editScore"
+          />
+        </b-modal>
       </div>
     </div>
   </div>
@@ -28,8 +40,12 @@
 <script>
 import { lighten, lightenDarkenColor } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket.js'
+import EditScore from '../components/EditScore.vue'
 
 export default {
+  components: {
+    EditScore
+  },
   props: {
     authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
@@ -42,7 +58,9 @@ export default {
       heatData: null,
       scoresData: null,
       participationsData: null,
-      state: 'waiting'
+      state: 'waiting',
+      editScore: null,
+      showModal: false
     }
   },
   computed: {
@@ -52,24 +70,22 @@ export default {
       if (this.participationsData === null) return []
       const data = new Map()
       this.participationsData.forEach((part, i) => {
-        const val = {
-          lycraColor: part.lycra_color
-        }
-        data.set(part.surfer_id, val)
+        data.set(part.surfer_id, Object.assign({}, part))
       })
       const scores = (this.scoresData || [])
-      const maxWaves = new Map()
+      const scoresBySurfer = new Map()
       scores.forEach((score, i) => {
         const sid = score.surfer_id
         const val = data.get(sid)
         val[`wave_${score.wave}`] = score
 
-        if (!maxWaves.has(sid)) maxWaves.set(sid, score.wave)
-        maxWaves.set(sid, Math.max(maxWaves.get(sid), score.wave))
+        if (!scoresBySurfer.has(sid)) scoresBySurfer.set(sid, [])
+        scoresBySurfer.get(sid).push(score)
       })
-      maxWaves.forEach((v, i) => {
-        const val = data.get(i)
-        val.maxWave = v
+      scoresBySurfer.forEach((s, sid) => {
+        const val = data.get(sid)
+        s.sort((a, b) => a.wave - b.wave)
+        val.scores = s
       })
       const res = [...data.values()]
       res.sort((a, b) => a.seed - b.seed)
@@ -79,7 +95,7 @@ export default {
       if (this.heatData === null) return []
       return [
         {
-          key: 'lycraColor',
+          key: 'lycra_color',
           label: 'Wave',
           formatter: (c) => c.name.charAt(0).toUpperCase() + c.name.slice(1),
           tdAttr: (value, key, item) => { return { style: `background-color: ${lightenDarkenColor(value.hex, 90)};` } }, // lycra hex color as background
@@ -139,6 +155,7 @@ export default {
       return true
     },
     refreshActiveAssignments () {
+      if (this.authenticated === null) return
       fetch(this.activeAssignementsUrl, {
         credentials: 'include' // for CORS in dev setup
       })
@@ -203,15 +220,26 @@ export default {
     },
     rowAttr (item, type) {
       return {
-        style: `background-color:  ${lighten(item.lycraColor.hex)};`
+        style: `background-color:  ${lighten(item.lycra_color.hex)};`
       }
     },
     rowClicked (item, index, event) {
       const colIndex = event.target.cellIndex
+      const maxWave = Math.max(...item.scores.map(score => score.wave))
 
-      if (colIndex > item.maxWave + 2) return
-      if (colIndex === 0) console.log('Append new score', item.maxWave + 1)
-      else console.log('Set score for', colIndex - 1)
+      if (colIndex > maxWave + 2) return
+      let wave = null
+      if (colIndex === 0) {
+        wave = item.maxWave + 1
+        console.log('Append new score', maxWave + 1)
+      } else {
+        wave = colIndex - 1
+        console.log('Set score for', colIndex - 1)
+      }
+      let oldScore = null
+      if (wave < item.scores.length) oldScore = item.scores[wave]
+      this.editScore = { wave, surfer_id: item.surfer.id, score: oldScore }
+      this.showModal = true
     }
   }
 }

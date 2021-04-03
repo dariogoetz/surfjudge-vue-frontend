@@ -19,7 +19,8 @@ import {
   InputGroupPlugin,
   AvatarPlugin,
   OverlayPlugin,
-  ToastPlugin
+  ToastPlugin,
+  ModalPlugin
 } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -43,6 +44,7 @@ Vue.use(IconsPlugin)
 Vue.use(AvatarPlugin)
 Vue.use(OverlayPlugin)
 Vue.use(ToastPlugin)
+Vue.use(ModalPlugin)
 
 /* eslint-disable-next-line no-new */
 new Vue({
