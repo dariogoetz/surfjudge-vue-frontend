@@ -1,26 +1,32 @@
 <template>
   <div>
-    <b-container v-if="active">
-      Waiting
-    </b-container>
-    <div v-else>
-      <b-table
-        :items="rows"
-        :fields="fields"
-        :tbody-tr-attr="row_attr"
-      />
-      It is on!
-      {{ scoresData }}
-      <br>
-      {{ heatData }}
-      <br>
-      {{ participationsData }}
+    <div v-if="authenticated !== null">
+      <b-container v-if="state === 'waiting'">
+        Waiting
+      </b-container>
+      <div v-if="state === 'checkJudge'">
+        Check Judge
+      </div>
+      <div v-if="state === 'judging'">
+        <b-table
+          :items="rows"
+          :fields="fields"
+          :tbody-tr-attr="rowAttr"
+          @row-clicked="rowClicked"
+          bordered
+        />
+        {{ scoresData }}
+        <br>
+        {{ heatData }}
+        <br>
+        {{ participationsData }}
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { lighten } from '../utils/lighten_darken_color'
+import { lighten, lightenDarkenColor } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket.js'
 
 export default {
@@ -35,7 +41,8 @@ export default {
       activeHeats: [],
       heatData: null,
       scoresData: null,
-      participationsData: null
+      participationsData: null,
+      state: 'waiting'
     }
   },
   computed: {
@@ -51,9 +58,18 @@ export default {
         data.set(part.surfer_id, val)
       })
       const scores = (this.scoresData || [])
+      const maxWaves = new Map()
       scores.forEach((score, i) => {
-        const val = data.get(score.surfer_id)
+        const sid = score.surfer_id
+        const val = data.get(sid)
         val[`wave_${score.wave}`] = score
+
+        if (!maxWaves.has(sid)) maxWaves.set(sid, score.wave)
+        maxWaves.set(sid, Math.max(maxWaves.get(sid), score.wave))
+      })
+      maxWaves.forEach((v, i) => {
+        const val = data.get(i)
+        val.maxWave = v
       })
       const res = [...data.values()]
       res.sort((a, b) => a.seed - b.seed)
@@ -64,18 +80,22 @@ export default {
       return [
         {
           key: 'lycraColor',
-          formatter: (c) => c.name,
-          tdAttr: (value, key, item) => { return { style: `background-color: ${value.hex};` } } // lycra hex color as background
+          label: 'Wave',
+          formatter: (c) => c.name.charAt(0).toUpperCase() + c.name.slice(1),
+          tdAttr: (value, key, item) => { return { style: `background-color: ${lightenDarkenColor(value.hex, 90)};` } }, // lycra hex color as background
+          tdClass: 'colorElem'
         },
         ...[...Array(this.heatData.number_of_waves).keys()].map((v, i) => {
           return {
             key: `wave_${i}`,
-            label: `Wave ${i + 1}`,
+            label: `${i + 1}`,
             formatter: (s) => {
+              if (s === null) return ''
               if (s.interference) return 'I'
               if (s.missed) return 'M'
               return s.score
-            }
+            },
+            tdClass: 'scoreElem'
           }
         })
       ]
@@ -109,30 +129,44 @@ export default {
       Socket.$off('heats', this.refreshHeat)
       Socket.$off('participants', this.refreshParticipations)
     },
+    uniqueAssignment () {
+      if (this.activeHeats.length !== 1) {
+        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
+        this.heatData = null
+        this.scores = null
+        return false
+      }
+      return true
+    },
     refreshActiveAssignments () {
       fetch(this.activeAssignementsUrl, {
         credentials: 'include' // for CORS in dev setup
       })
         .then(response => {
           if (!response.ok) {
+            this.state = 'waiting'
             return []
           }
           return response.json()
         })
         .then(data => {
           this.activeHeats = data
-          this.refreshHeat()
-          this.refreshScores()
-          this.refreshParticipations()
+          if (this.uniqueAssignment()) {
+            this.state = 'judging'
+            this.refreshHeat()
+            this.refreshScores()
+            this.refreshParticipations()
+          } else {
+            if (this.state === 'judging') {
+              this.state = 'checkJudge'
+            } else {
+              this.state = 'waiting'
+            }
+          }
         })
     },
     refreshHeat () {
-      if (this.activeHeats.length !== 1) {
-        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
-        this.heatData = null
-        this.scores = null
-        return
-      }
+      if (!this.uniqueAssignment()) return
 
       const heatId = this.activeHeats[0].id
       fetch(this.heatsUrl(heatId), {
@@ -144,12 +178,7 @@ export default {
         })
     },
     refreshScores () {
-      if (this.activeHeats.length !== 1) {
-        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
-        this.heatData = null
-        this.scores = null
-        return
-      }
+      if (!this.uniqueAssignment()) return
 
       const heatId = this.activeHeats[0].id
       fetch(this.scoresUrl(heatId), {
@@ -161,12 +190,7 @@ export default {
         })
     },
     refreshParticipations () {
-      if (this.activeHeats.length !== 1) {
-        if (this.activeHeats.length > 1) console.error('More than one heat active for me.')
-        this.heatData = null
-        this.scores = null
-        return
-      }
+      if (!this.uniqueAssignment()) return
 
       const heatId = this.activeHeats[0].id
       fetch(this.participationsUrl(heatId), {
@@ -177,12 +201,29 @@ export default {
           this.participationsData = data
         })
     },
-    row_attr (item, type) {
-      console.log(item)
+    rowAttr (item, type) {
       return {
         style: `background-color:  ${lighten(item.lycraColor.hex)};`
       }
+    },
+    rowClicked (item, index, event) {
+      const colIndex = event.target.cellIndex
+
+      if (colIndex > item.maxWave + 2) return
+      if (colIndex === 0) console.log('Append new score', item.maxWave + 1)
+      else console.log('Set score for', colIndex - 1)
     }
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+table >>> tr > td
+  vertical-align middle
+  font-size 1.5em
+  text-align center
+  height 70px
+
+table >>> tr > td.colorElem
+  font-weight bold
+</style>
