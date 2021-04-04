@@ -15,7 +15,8 @@
 
 <script>
 import { lighten } from '../utils/lighten_darken_color'
-import Socket from '../utils/Socket.js'
+import Socket from '../utils/Socket'
+import round from '../utils/round_decimals'
 
 export default {
   props: {
@@ -75,7 +76,7 @@ export default {
         {
           key: 'total_score',
           label: 'Score',
-          formatter: (s) => s === null ? '-' : this.round(s, this.roundDecimals).toFixed(this.roundDecimals),
+          formatter: (s) => s === null ? '-' : round(s, this.roundDecimals).toFixed(this.roundDecimals),
           tdClass: 'total_score_cell',
           thClass: 'total_score_header'
         },
@@ -95,7 +96,7 @@ export default {
         ...[...Array(this.nWaves).keys()].map((v, i) => {
           return {
             key: `wave_${i}`,
-            formatter: (s) => s ? this.round(s.score, this.roundDecimals).toFixed(this.roundDecimals) : '',
+            formatter: (s) => s ? round(s.score, this.roundDecimals).toFixed(this.roundDecimals) : '',
             label: `Wave ${i + 1}`,
             tdClass: (value, key, item) => value.best_wave ? 'best_wave wave_score_cell' : 'wave_score_cell',
             thClass: 'wave_score_header'
@@ -188,7 +189,7 @@ export default {
           if (result.total_score >= targetScore) {
             return -1
           } else {
-            return this.round(targetScore - bw.score, this.roundDecimals)
+            return round(targetScore - bw.score, this.roundDecimals)
           }
         })
         needs.set(result.surfer_id, surferNeeds)
@@ -264,9 +265,6 @@ export default {
       return fetch(this.participationsUrl)
         .then(response => response.json())
         .then(data => { this.participations = data })
-    },
-    round (number, decimals) {
-      return Number(Math.round(number + 'e' + decimals) + 'e-' + decimals)
     },
     row_attr (item, type) {
       return {
