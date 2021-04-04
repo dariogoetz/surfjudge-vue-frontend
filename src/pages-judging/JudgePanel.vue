@@ -30,6 +30,7 @@
           <edit-score
             :authenticated="authenticated"
             :edit-score="editScore"
+            @canceled="cancelEdit"
           />
         </b-modal>
       </div>
@@ -227,6 +228,7 @@ export default {
       const colIndex = event.target.cellIndex
       const maxWave = Math.max(...item.scores.map(score => score.wave))
 
+      // determine which wave is to be edited
       if (colIndex > maxWave + 2) return
       let wave = null
       if (colIndex === 0) {
@@ -238,6 +240,10 @@ export default {
       if (wave < item.scores.length) oldScore = item.scores[wave]
       this.editScore = { wave, surfer_id: item.surfer.id, score: oldScore }
       this.showModal = true
+    },
+    cancelEdit () {
+      this.editScore = null
+      this.showModal = false
     }
   }
 }
