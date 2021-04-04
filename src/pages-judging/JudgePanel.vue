@@ -230,11 +230,9 @@ export default {
       if (colIndex > maxWave + 2) return
       let wave = null
       if (colIndex === 0) {
-        wave = item.maxWave + 1
-        console.log('Append new score', maxWave + 1)
+        wave = maxWave + 1
       } else {
         wave = colIndex - 1
-        console.log('Set score for', colIndex - 1)
       }
       let oldScore = null
       if (wave < item.scores.length) oldScore = item.scores[wave]
