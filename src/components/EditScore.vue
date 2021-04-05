@@ -139,7 +139,7 @@ export default {
     error (msg) { this.$emit('error', msg) },
     setMissed () {
       this.score = {
-        score: null,
+        score: -1,
         missed: true,
         interference: false
       }
