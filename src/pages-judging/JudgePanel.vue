@@ -28,9 +28,11 @@
           hide-footer
         >
           <edit-score
+            :api-url="judgingApiUrl"
             :authenticated="authenticated"
             :edit-score="editScore"
-            @canceled="cancelEdit"
+            @close="cancelEdit"
+            @error="showError"
           />
         </b-modal>
       </div>
@@ -124,6 +126,7 @@ export default {
     }
   },
   created () {
+    // TODO: send judging requests
     this.initWebSocket()
     this.refreshActiveAssignments()
   },
@@ -238,12 +241,27 @@ export default {
       }
       let oldScore = null
       if (wave < item.scores.length) oldScore = item.scores[wave]
-      this.editScore = { wave, surfer_id: item.surfer.id, score: oldScore }
+      this.editScore = {
+        wave,
+        surfer_id: item.surfer.id,
+        score: oldScore,
+        heat_id: this.heatData.id
+      }
       this.showModal = true
     },
     cancelEdit () {
       this.editScore = null
       this.showModal = false
+    },
+    showError (msg) {
+      this.cancelEdit()
+      this.$bvToast.toast(msg, {
+        title: 'Error',
+        autoHideDelay: 2000,
+        appendToast: true,
+        variant: 'danger',
+        solid: true
+      })
     }
   }
 }

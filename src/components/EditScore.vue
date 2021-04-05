@@ -40,7 +40,7 @@
             variant="secondary"
             size="lg"
             class="cancel_btn"
-            @click="cancel"
+            @click="close"
           >
             Cancel
           </b-button>
@@ -107,6 +107,7 @@
 import round from '../utils/round_decimals'
 export default {
   props: {
+    apiUrl: { type: String, default: '' },
     editScore: { type: Object, default: null },
     authenticated: { type: Object, default: null },
     allowDelete: { type: Boolean, default: false }
@@ -117,6 +118,7 @@ export default {
     }
   },
   computed: {
+    putScoreUrl () { return `${this.apiUrl}/scores` },
     waveLabel () {
       if (this.editScore === null) return 'Wave'
       return `Wave ${this.editScore.wave + 1}`
@@ -133,7 +135,8 @@ export default {
     }
   },
   methods: {
-    cancel () { this.$emit('canceled') },
+    close () { this.$emit('close') },
+    error (msg) { this.$emit('error', msg) },
     setMissed () {
       this.score = {
         score: null,
@@ -186,12 +189,31 @@ export default {
     },
     submitScore () {
       if (this.score === null) {
-        this.cancel()
+        this.close()
         return
       }
-      console.log('Submitting')
-      console.log(this.editScore)
-      console.log(this.score)
+      const data = {
+        judge_id: this.authenticated.id,
+        surfer_id: this.editScore.surfer_id,
+        heat_id: this.editScore.heat_id,
+        wave: this.editScore.wave,
+        score: this.score.score,
+        missed: this.score.missed,
+        interference: this.score.interference
+      }
+      fetch(this.putScoreUrl, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
+        .then(response => {
+          if (!response.ok) {
+            this.error('Error sending score to server.')
+          } else {
+            this.close()
+          }
+        })
     },
     deleteScore () {
       console.log('Deleting')
