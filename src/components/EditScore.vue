@@ -80,6 +80,7 @@
         <td class="submit_btn_td">
           <b-button
             v-if="allowDelete && score === null"
+            :disabled="editScore === null || editScore.score === null"
             variant="danger"
             size="lg"
             class="submit_btn"
@@ -135,6 +136,9 @@ export default {
     }
   },
   methods: {
+    deleteScoreUrl (s) {
+      return `${this.apiUrl}/scores/${s.heat_id}/${s.judge_id}/${s.surfer_id}/${s.wave}`
+    },
     close () { this.$emit('close') },
     error (msg) { this.$emit('error', msg) },
     setMissed () {
@@ -216,9 +220,30 @@ export default {
         })
     },
     deleteScore () {
-      console.log('Deleting')
-      console.log(this.editScore)
+      const data = {
+        judge_id: this.authenticated.id,
+        surfer_id: this.editScore.surfer_id,
+        heat_id: this.editScore.heat_id,
+        wave: this.editScore.wave
+      }
+      fetch(this.deleteScoreUrl(data), {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
+        .then(response => {
+          if (!response.ok) {
+            this.error('Error sending score deletion request to server.')
+          } else {
+            this.close()
+          }
+        })
     }
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+  table >>> tr
+    font-size 1.5em
+</style>
