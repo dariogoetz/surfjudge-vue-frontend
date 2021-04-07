@@ -231,6 +231,7 @@ export default {
       const colIndex = event.target.cellIndex
       const maxWave = Math.max(...item.scores.map(score => score.wave))
 
+      const scoresMap = new Map(item.scores.map(v => [v.wave, v]))
       // determine which wave is to be edited
       if (colIndex > maxWave + 2) return
       let wave = null
@@ -239,8 +240,7 @@ export default {
       } else {
         wave = colIndex - 1
       }
-      let oldScore = null
-      if (wave < item.scores.length) oldScore = item.scores[wave]
+      const oldScore = scoresMap.get(wave) || null
       this.editScore = {
         wave,
         surfer_id: item.surfer.id,
