@@ -1,7 +1,6 @@
 <template>
   <div>
-    Edit Score
-    <table class="outer_table table borderless">
+    <table class="outer_table table borderless" :style="backgroundColor">
       <tr>
         <td class="wave_label_td">
           <div class="wave_label">{{ waveLabel }}</div>
@@ -9,7 +8,7 @@
         </td>
 
         <td class="number_pad_td" rowspan="3">
-          <table class="number_pad table table-bordered">
+          <table class="number_pad table table-bordered" :style="backgroundColor">
             <tbody>
               <tr>
                 <td @click="enterDigit(1)">1</td>
@@ -69,7 +68,7 @@
       <tr>
         <td class="missed_btn_td" align="center">
           <b-button
-            variant="standard"
+            variant="light"
             size="lg"
             class="missed_btn"
             @click="setMissed"
@@ -105,6 +104,7 @@
 </template>
 
 <script>
+import { lighten } from '../utils/lighten_darken_color'
 import round from '../utils/round_decimals'
 export default {
   props: {
@@ -133,7 +133,8 @@ export default {
       else if (this.score.missed) return 'M'
       else if (this.score.interference) return 'I'
       else return round(this.score.score, 1).toFixed(1)
-    }
+    },
+    backgroundColor () { return `background-color: ${lighten(this.editScore.hex)};` }
   },
   methods: {
     deleteScoreUrl (s) {
@@ -244,6 +245,65 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-  table >>> tr
-    font-size 1.5em
+  table >>> .wave_label_td
+    width 25%
+    text-align center
+    vertical-align middle
+  table >>> .wave_label
+    font-size 2em
+    font-weight bold
+
+  table >>> .missed_btn_td
+    vertical-align middle
+  table >>> .missed_btn
+    width 100px
+    height 70px
+
+  table >>> .score_td
+    text-align center
+    vertical-align middle
+    background-color #eeeeee
+  table >>> .score
+    font-size 3em
+  table >>> .old_score_label
+    color red
+
+  table >>> .number_pad_td
+    background-color #eeeeee
+  table.number_pad > tbody > tr
+    height 100px
+  table.number_pad > tbody > tr > td
+    font-size 2em
+    font-weight bold
+    text-align center
+    vertical-align middle
+  table.number_pad > tbody > tr > td:hover
+    background-color #eeeeee
+
+  table >>> .cancel_btn_td
+    background-color #eeeeee
+    vertical-align middle
+    width 15%
+  table >>> .cancel_btn
+    width 100%
+    height 70px
+
+  table >>> .clear_btn_td
+    background-color #eeeeee
+    vertical-align middle
+    border-radius 0px 0px 0px 0px
+    width 15%
+  table >>> .clear_btn
+    width 100%
+    height 70px
+
+  table >>> .submit_btn_td
+    background-color #eeeeee
+    vertical-align middle
+    border-radius 0px 0px 0px 0px
+    width 15%
+  table >>> .submit_btn
+    width 100%
+    height 70px
+
 </style>

@@ -8,33 +8,37 @@
         Check Judge
       </div>
       <div v-if="state === 'judging'">
-        <b-table
-          :items="rows"
-          :fields="fields"
-          :tbody-tr-attr="rowAttr"
-          bordered
-          @row-clicked="rowClicked"
-        />
-        {{ scoresData }}
-        <br>
-        {{ heatData }}
-        <br>
-        {{ participationsData }}
-        <b-modal
-          id="enter-score-modal"
-          v-model="showModal"
-          size="xl"
-          hide-header
-          hide-footer
+        <b-card
+          no-body
+          header-bg-variant="secondary"
+          header-text-variant="white"
         >
-          <edit-score
-            :api-url="judgingApiUrl"
-            :authenticated="authenticated"
-            :edit-score="editScore"
-            @close="cancelEdit"
-            @error="showError"
+          <template #header>
+            {{ heatData.name }}
+          </template>
+          <b-table
+            :items="rows"
+            :fields="fields"
+            :tbody-tr-attr="rowAttr"
+            bordered
+            @row-clicked="rowClicked"
           />
-        </b-modal>
+          <b-modal
+            id="enter-score-modal"
+            v-model="showModal"
+            size="lg"
+            hide-header
+            hide-footer
+          >
+            <edit-score
+              :api-url="judgingApiUrl"
+              :authenticated="authenticated"
+              :edit-score="editScore"
+              @close="cancelEdit"
+              @error="showError"
+            />
+          </b-modal>
+        </b-card>
       </div>
     </div>
   </div>
@@ -245,7 +249,8 @@ export default {
         wave,
         surfer_id: item.surfer.id,
         score: oldScore,
-        heat_id: this.heatData.id
+        heat_id: this.heatData.id,
+        hex: item.lycra_color.hex
       }
       this.showModal = true
     },
@@ -268,6 +273,9 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.card-header
+  font-size 2em
+
 table >>> tr > td
   vertical-align middle
   font-size 1.5em
