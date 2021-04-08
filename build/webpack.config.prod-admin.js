@@ -15,13 +15,12 @@ function resolve (dir) {
 
 module.exports = {
   mode: 'production',
-  // index.js is standard, so setting the entry is not required
   entry: [
     './src/index-admin.js'
   ],
   output: {
-    publicPath: '/static/admin-app',
-    path: resolve('dist/static/admin-app')
+    publicPath: '/static/app-admin',
+    path: resolve('dist/static/app-admin')
   },
   module: {
     rules: [
@@ -59,7 +58,7 @@ module.exports = {
     }),
     new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
-      filename: resolve('dist/index.html'),
+      filename: resolve('dist/index-admin.html'),
       template: 'index.html',
       inject: true,
       favicon: resolve('static/img/favicon.png')

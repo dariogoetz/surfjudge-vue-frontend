@@ -15,13 +15,12 @@ function resolve (dir) {
 
 module.exports = {
   mode: 'production',
-  // index.js is standard, so setting the entry is not required
   entry: [
     './src/index-judging.js'
   ],
   output: {
-    publicPath: '/static/judging-app',
-    path: resolve('dist/static/judging-app')
+    publicPath: '/static/app-judging',
+    path: resolve('dist/static/app-judging')
   },
   module: {
     rules: [
@@ -59,7 +58,7 @@ module.exports = {
     }),
     new VueLoaderPlugin(),
     new HtmlWebpackPlugin({
-      filename: resolve('dist/index.html'),
+      filename: resolve('dist/index-judging.html'),
       template: 'index.html',
       inject: true,
       favicon: resolve('static/img/favicon.png')
