@@ -20,8 +20,8 @@ module.exports = {
     './src/index-judging.js'
   ],
   output: {
-    publicPath: '/static/app',
-    path: resolve('dist/static/app')
+    publicPath: '/static/judging-app',
+    path: resolve('dist/static/judging-app')
   },
   module: {
     rules: [

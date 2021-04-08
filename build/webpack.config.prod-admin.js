@@ -20,8 +20,8 @@ module.exports = {
     './src/index-admin.js'
   ],
   output: {
-    publicPath: '/static/app',
-    path: resolve('dist/static/app')
+    publicPath: '/static/admin-app',
+    path: resolve('dist/static/admin-app')
   },
   module: {
     rules: [
