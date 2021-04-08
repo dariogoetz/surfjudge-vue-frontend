@@ -14,7 +14,7 @@
           header-text-variant="white"
         >
           <template #header>
-            {{ heatData.name }}
+            {{ heatData === null ? "" : heatData.name }}
           </template>
           <b-table
             :items="rows"

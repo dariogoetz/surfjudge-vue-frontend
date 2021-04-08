@@ -134,7 +134,7 @@ export default {
       else if (this.score.interference) return 'I'
       else return round(this.score.score, 1).toFixed(1)
     },
-    backgroundColor () { return `background-color: ${lighten(this.editScore.hex)};` }
+    backgroundColor () { return this.editScore === null ? '#eeeeee' : `background-color: ${lighten(this.editScore.hex)};` }
   },
   methods: {
     deleteScoreUrl (s) {
