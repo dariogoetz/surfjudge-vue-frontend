@@ -67,6 +67,7 @@ export default {
       tournament: null,
       config: {
         websocket_url: null,
+        public_path: null,
         auth_path: null,
         judging_path: null
       }
