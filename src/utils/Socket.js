@@ -14,14 +14,10 @@ const emitter = new Vue({
       const channels = {}
       channelNames.forEach(channel => {
         channels[channel] = (jsonMsg) => {
-          const msg = JSON.parse(jsonMsg)
-
-          if (msg.channel === channel) {
-            this.$emit(
-              channel.replace('_', '-'),
-              JSON.parse(msg.message)
-            )
-          }
+          this.$emit(
+            channel.replace('_', '-'),
+            JSON.parse(jsonMsg)
+          )
         }
       })
       this.socket = new WebSocketClient({
