@@ -2,11 +2,25 @@
   <div>
     <div v-if="authenticated !== null">
       <b-container v-if="state === 'waiting'">
-        Waiting
+        <b-jumbotron header="Judging Panel" lead="Please wait for heat to start...">
+          <hr>
+          <img src="/static/img/JudgingPanelWaiting.png" style="width: 600px; margin-left: auto; margin-right: auto; display: block;">
+        </b-jumbotron>
       </b-container>
-      <div v-if="state === 'checkJudge'">
-        Check Judge
-      </div>
+      <b-container class="checkJudge" v-if="state === 'checkJudge'">
+        <b-row class="justify-content-center">
+          <b-col cols="6">
+            <b-jumbotron header="Heat is over.">
+              <hr>
+              <br>
+              <span>{{ judgeCheckMessage }}</span>
+              <br><br><br>
+              <b-button @click="setWaiting" variant="success" size="lg"><b-icon-check />Yes</b-button>
+              <b-button @click="logout" variant="danger" size="lg" class="float-right"><b-icon-x />No</b-button>
+            </b-jumbotron>
+          </b-col>
+        </b-row>
+      </b-container>
       <div v-if="state === 'judging'">
         <b-card
           no-body
@@ -57,7 +71,8 @@ export default {
     authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
     publicApiUrl: { type: String, default: '' },
-    judgingApiUrl: { type: String, default: '' }
+    judgingApiUrl: { type: String, default: '' },
+    checkJudge: { type: Boolean, default: true }
   },
   data () {
     return {
@@ -122,6 +137,14 @@ export default {
           }
         })
       ]
+    },
+    judgeCheckMessage () {
+      if (this.authenticated === null) return ''
+      let name = this.authenticated.username
+      if (this.authenticated.firstName || this.authenticated.lastName) {
+        name = `${this.authenticated.firstName} ${this.authenticated.lastName}`
+      }
+      return `Are you ${name}?`
     }
   },
   watch: {
@@ -182,7 +205,7 @@ export default {
             this.refreshScores()
             this.refreshParticipations()
           } else {
-            if (this.state === 'judging') {
+            if (this.state === 'judging' && this.checkJudge) {
               this.state = 'checkJudge'
             } else {
               this.state = 'waiting'
@@ -267,6 +290,12 @@ export default {
         variant: 'danger',
         solid: true
       })
+    },
+    setWaiting () {
+      this.state = 'waiting'
+    },
+    logout () {
+      this.$emit('logout')
     }
   }
 }
@@ -284,4 +313,11 @@ table >>> tr > td
 
 table >>> tr > td.colorElem
   font-weight bold
+
+.checkJudge >>> button
+  height 100px
+  width 150px
+  font-size 1.5em
+.checkJudge >>> span
+  font-size 2em
 </style>

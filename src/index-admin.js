@@ -20,7 +20,8 @@ import {
   AvatarPlugin,
   OverlayPlugin,
   ToastPlugin,
-  ModalPlugin
+  ModalPlugin,
+  JumbotronPlugin
 } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -45,6 +46,7 @@ Vue.use(AvatarPlugin)
 Vue.use(OverlayPlugin)
 Vue.use(ToastPlugin)
 Vue.use(ModalPlugin)
+Vue.use(JumbotronPlugin)
 
 /* eslint-disable-next-line no-new */
 new Vue({

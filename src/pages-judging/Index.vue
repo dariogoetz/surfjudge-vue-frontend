@@ -4,10 +4,10 @@
       <b-navbar toggleable="lg" type="dark" variant="dark">
         <b-navbar-brand href="#">
           <b-link to="/" class="navbar-brand">
-            <img src="/static/img/SurfjudgeLogo.png">
+            <img src="/static/img/Banner1.png">
           </b-link>
           <b-link to="/" class="navbar-brand">
-            <img src="/static/img/DWV_Logo_weiß_small.png">
+            <img src="/static/img/Banner2.png">
           </b-link>
         </b-navbar-brand>
         <b-navbar-toggle target="nav-collapse" />
@@ -110,6 +110,9 @@ export default {
           this.config = data
           Socket.init(data.websocket_url)
         })
+    },
+    logout () {
+      console.log('logout')
     }
   }
 }
