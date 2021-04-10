@@ -14,7 +14,6 @@ const routes = [
   {
     path: '/',
     component: Index,
-    props: { baseUrl: __API_PATH__ }, // is defined in webpack config
     children: [
       { path: '', component: LiveResults },
       { path: 'live_results', component: LiveResults },

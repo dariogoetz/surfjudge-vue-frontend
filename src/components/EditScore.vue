@@ -104,13 +104,13 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import { lighten } from '../utils/lighten_darken_color'
 import round from '../utils/round_decimals'
 export default {
   props: {
-    apiUrl: { type: String, default: '' },
     editScore: { type: Object, default: null },
-    authenticated: { type: Object, default: null },
     allowDelete: { type: Boolean, default: false }
   },
   data () {
@@ -119,7 +119,7 @@ export default {
     }
   },
   computed: {
-    putScoreUrl () { return `${this.apiUrl}/scores` },
+    putScoreUrl () { return `${this.judgingApiUrl}/scores` },
     waveLabel () {
       if (this.editScore === null) return 'Wave'
       return `Wave ${this.editScore.wave + 1}`
@@ -134,11 +134,12 @@ export default {
       else if (this.score.interference) return 'I'
       else return round(this.score.score, 1).toFixed(1)
     },
-    backgroundColor () { return this.editScore === null ? '#eeeeee' : `background-color: ${lighten(this.editScore.hex)};` }
+    backgroundColor () { return this.editScore === null ? '#eeeeee' : `background-color: ${lighten(this.editScore.hex)};` },
+    ...mapGetters(['judgingApiUrl', 'authenticatedUser'])
   },
   methods: {
     deleteScoreUrl (s) {
-      return `${this.apiUrl}/scores/${s.heat_id}/${s.judge_id}/${s.surfer_id}/${s.wave}`
+      return `${this.judgingApiUrl}/scores/${s.heat_id}/${s.judge_id}/${s.surfer_id}/${s.wave}`
     },
     close () { this.$emit('close') },
     error (msg) { this.$emit('error', msg) },
@@ -198,7 +199,7 @@ export default {
         return
       }
       const data = {
-        judge_id: this.authenticated.id,
+        judge_id: this.authenticatedUser.id,
         surfer_id: this.editScore.surfer_id,
         heat_id: this.editScore.heat_id,
         wave: this.editScore.wave,
@@ -222,7 +223,7 @@ export default {
     },
     deleteScore () {
       const data = {
-        judge_id: this.authenticated.id,
+        judge_id: this.authenticatedUser.id,
         surfer_id: this.editScore.surfer_id,
         heat_id: this.editScore.heat_id,
         wave: this.editScore.wave

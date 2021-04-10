@@ -35,7 +35,6 @@
             <result-table
               :heat-id="data.heat.id"
               :initial-data="data"
-              :api-url="publicApiUrl"
               :show-needs="false"
             />
           </b-card>
@@ -46,6 +45,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import DropdownMenu from '../components/DropdownMenu.vue'
 import ResultTable from '../components/ResultTable.vue'
 import Socket from '../utils/Socket.js'
@@ -56,8 +57,7 @@ export default {
     ResultTable
   },
   props: {
-    tournament: { type: Object, default: null },
-    publicApiUrl: { type: String, default: '' }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
@@ -105,7 +105,8 @@ export default {
       const roundsHeats = Array.from(r2h)
       roundsHeats.sort((a, b) => a[0] - b[0])
       return roundsHeats
-    }
+    },
+    ...mapGetters(['publicApiUrl'])
   },
   watch: {
     tournament (val) {

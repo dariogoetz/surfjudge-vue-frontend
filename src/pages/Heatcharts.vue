@@ -13,7 +13,6 @@
         </template>
         <heatchart
           :category-id="category.id"
-          :api-url="publicApiUrl"
         />
       </b-card>
       <hr>
@@ -22,6 +21,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import Heatchart from '../components/Heatchart.vue'
 
 export default {
@@ -29,8 +30,7 @@ export default {
     Heatchart
   },
   props: {
-    tournament: { type: Object, default: null },
-    publicApiUrl: { type: String, default: '' }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
@@ -40,7 +40,8 @@ export default {
   computed: {
     categoriesUrl () {
       return this.tournament === null ? null : `${this.publicApiUrl}/tournaments/${this.tournament.id}/categories`
-    }
+    },
+    ...mapGetters(['publicApiUrl'])
   },
   watch: {
     tournament () {

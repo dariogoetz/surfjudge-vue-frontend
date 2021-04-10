@@ -9,7 +9,6 @@ const routes = [
   {
     path: '/',
     component: Index,
-    props: { baseUrl: __API_PATH__ }, // is defined in webpack config
     children: [
       { path: '', component: JudgePanel }
     ]

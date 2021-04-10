@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router/index-judging'
+import store from './store'
 
 import {
   LayoutPlugin,
@@ -51,5 +52,6 @@ Vue.use(JumbotronPlugin)
 /* eslint-disable-next-line no-new */
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')

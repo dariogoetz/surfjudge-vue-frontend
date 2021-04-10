@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="apiReady">
+    <div v-if="initialized">
       <b-navbar toggleable="lg" type="dark" variant="dark">
         <b-navbar-brand href="#">
           <b-link to="/" class="navbar-brand">
@@ -43,13 +43,14 @@
 
       <router-view
         :tournament="tournament"
-        :public-api-url="publicApiUrl"
       />
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import Socket from '../utils/Socket.js'
 import DropdownMenu from '../components/DropdownMenu.vue'
 
@@ -58,30 +59,20 @@ export default {
     DropdownMenu
   },
   props: {
-    baseUrl: { type: String, default: '' }
   },
   data () {
     return {
-      tournament: null,
-      config: {
-        websocket_url: null,
-        public_path: null
-      }
+      tournament: null
     }
   },
   computed: {
-    apiReady () {
-      return this.config.public_path !== null
-    },
     configUrl () {
       return `${this.baseUrl}/config`
     },
-    publicApiUrl () {
-      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}`
-    },
     tournamentsUrl () {
-      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}/tournaments`
-    }
+      return this.initialized ? `${this.publicApiUrl}/tournaments` : null
+    },
+    ...mapGetters(['initialized', 'configUrl', 'publicApiUrl'])
   },
   created () {
     this.fetchConfig()
@@ -94,7 +85,7 @@ export default {
       fetch(this.configUrl)
         .then((response) => response.json())
         .then((data) => {
-          this.config = data
+          this.$store.commit('setConfig', data)
           Socket.init(data.websocket_url)
         })
     }

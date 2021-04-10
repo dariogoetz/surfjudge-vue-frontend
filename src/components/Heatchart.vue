@@ -3,7 +3,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import * as d3 from 'd3'
+
 import parseISOLocal from '../utils/parse_local_date'
 import { lighten } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket.js'
@@ -31,10 +33,7 @@ export default {
     placeWidthFactor: { type: Number, default: 0.475 },
     scoreWidthFactor: { type: Number, default: 0.1 },
 
-    addSymbolOffset: { type: Number, default: 0 },
-
-    apiUrl: { type: String, default: '' }
-
+    addSymbolOffset: { type: Number, default: 0 }
   },
   data () {
     return {
@@ -59,19 +58,19 @@ export default {
   },
   computed: {
     heatsUrl () {
-      return `${this.apiUrl}/categories/${this.categoryId}/heats`
+      return `${this.publicApiUrl}/categories/${this.categoryId}/heats`
     },
     advancementsUrl () {
-      return `${this.apiUrl}/categories/${this.categoryId}/advancements`
+      return `${this.publicApiUrl}/categories/${this.categoryId}/advancements`
     },
     resultsUrl () {
-      return `${this.apiUrl}/categories/${this.categoryId}/results`
+      return `${this.publicApiUrl}/categories/${this.categoryId}/results`
     },
     participationsUrl () {
-      return `${this.apiUrl}/categories/${this.categoryId}/participations`
+      return `${this.publicApiUrl}/categories/${this.categoryId}/participations`
     },
     activeHeatsUrl () {
-      return `${this.apiUrl}/categories/${this.categoryId}/active_heats`
+      return `${this.publicApiUrl}/categories/${this.categoryId}/active_heats`
     },
     width () {
       if (this.targetWidth === null) return this.scalingFactor * this.internalWidth
@@ -263,7 +262,8 @@ export default {
         res.push(link)
       })
       return res
-    }
+    },
+    ...mapGetters(['publicApiUrl'])
   },
   created () {
     this.initWebSocket()
@@ -426,7 +426,7 @@ export default {
         })
     },
     heatResultsUrl (heatId) {
-      return `${this.apiUrl}/heats/${heatId}/results`
+      return `${this.publicApiUrl}/heats/${heatId}/results`
     },
     draw () {
       this.genD3GroupSelections()

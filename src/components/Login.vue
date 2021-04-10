@@ -22,9 +22,10 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   props: {
-    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -36,10 +37,18 @@ export default {
     }
   },
   computed: {
-    meUrl () { return `${this.apiUrl}/me` },
-    loginUrl () { return `${this.apiUrl}/login` },
-    logoutUrl () { return `${this.apiUrl}/logout` },
-    loggedIn () { return this.user !== null }
+    meUrl () { return `${this.authApiUrl}/me` },
+    loginUrl () { return `${this.authApiUrl}/login` },
+    logoutUrl () { return `${this.authApiUrl}/logout` },
+    loggedIn () { return this.user !== null },
+    ...mapGetters(['authApiUrl', 'requestLogout'])
+  },
+  watch: {
+    requestLogout (newVal) {
+      if (!newVal) return
+      this.logout()
+      this.$store.commit('resetLogoutRequest')
+    }
   },
   created () {
     // fetch meUrl into this.user
@@ -48,7 +57,7 @@ export default {
     })
       .then(response => response.json())
       .then(data => {
-        this.$emit('authenticated', data)
+        this.$store.commit('setAuthentication', data)
         this.user = data
         this.initialized = true
       })
@@ -66,7 +75,6 @@ export default {
         .then(response => {
           this.showOverlay = false
           if (!response.ok) {
-            console.log(response.statusText)
             this.$bvToast.toast('Login failed', {
               title: 'Message',
               autoHideDelay: 2000,
@@ -78,7 +86,7 @@ export default {
           return response.json()
         })
         .then(data => {
-          this.$emit('authenticated', data)
+          this.$store.commit('setAuthentication', data)
           this.user = data
           this.username = ''
           this.password = ''
@@ -91,13 +99,8 @@ export default {
         credentials: 'include' // for CORS in dev setup
       })
         .then(response => {
-          this.$emit('authenticated', null)
-          this.user = null
-          this.username = ''
-          this.password = ''
           this.showOverlay = false
           if (!response.ok) {
-            console.log(response.statusText)
             this.$bvToast.toast('Logout failed', {
               title: 'Message',
               autoHideDelay: 2000,
@@ -107,6 +110,12 @@ export default {
             })
           }
           return response.json()
+        })
+        .then(data => {
+          this.$store.commit('setAuthentication', null)
+          this.user = null
+          this.username = ''
+          this.password = ''
         })
     }
   }

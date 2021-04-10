@@ -17,6 +17,7 @@
 import { lighten } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket'
 import round from '../utils/round_decimals'
+import { mapGetters } from 'vuex'
 
 export default {
   props: {
@@ -26,7 +27,6 @@ export default {
     showNeedsSecond: { type: Boolean, default: true },
     lastNameOnNewline: { type: Boolean, default: true },
     initialData: { type: Object, default: null },
-    apiUrl: { type: String, default: '' }
   },
   data () {
     return {
@@ -41,13 +41,13 @@ export default {
       return (this.showNeeds && this.heat_type !== 'call') || false
     },
     resultsUrl () {
-      return `${this.apiUrl}/heats/${this.heatId}/results`
+      return `${this.publicApiUrl}/heats/${this.heatId}/results`
     },
     heatUrl () {
-      return `${this.apiUrl}/heats/${this.heatId}`
+      return `${this.publicApiUrl}/heats/${this.heatId}`
     },
     participationsUrl () {
-      return `${this.apiUrl}/heats/${this.heatId}/participations`
+      return `${this.publicApiUrl}/heats/${this.heatId}/participations`
     },
     fields () {
       if (this.results === null) return []
@@ -195,7 +195,8 @@ export default {
         needs.set(result.surfer_id, surferNeeds)
       })
       return needs
-    }
+    },
+    ...mapGetters(['publicApiUrl'])
   },
   watch: {
     initialData (val) {

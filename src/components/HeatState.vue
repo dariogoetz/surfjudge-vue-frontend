@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import Socket from '../utils/Socket.js'
 
 export default {
@@ -19,9 +21,7 @@ export default {
     heatId: {
       type: Number,
       default: null
-    },
-    publicApiUrl: { type: String, default: '' },
-    adminApiUrl: { type: String, default: '' }
+    }
   },
   data () {
     return {
@@ -37,7 +37,8 @@ export default {
     resetHeatTimeUrl () { return `${this.adminApiUrl}/heats/${this.heatId}/reset_heat_time` },
     active () { return this.heatState === null ? false : this.heatState.state === 'active' },
     paused () { return this.heatState === null ? false : this.heatState.state === 'paused' },
-    inactive () { return this.heatState === null ? true : this.heatState.state === 'inactive' }
+    inactive () { return this.heatState === null ? true : this.heatState.state === 'inactive' },
+    ...mapGetters(['publicApiUrl', 'adminApiUrl'])
   },
   watch: {
     heatId () {

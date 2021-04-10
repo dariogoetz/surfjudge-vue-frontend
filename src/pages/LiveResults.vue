@@ -13,7 +13,6 @@
         </template>
         <result-table
           :heat-id="heat.id"
-          :api-url="publicApiUrl"
         />
       </b-card>
     </b-container>
@@ -21,6 +20,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import ResultTable from '../components/ResultTable.vue'
 import Socket from '../utils/Socket.js'
 
@@ -29,8 +30,7 @@ export default {
     ResultTable
   },
   props: {
-    tournament: { type: Object, default: null },
-    publicApiUrl: { type: String, default: null }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
@@ -55,7 +55,8 @@ export default {
         res.push(heat)
       })
       return res
-    }
+    },
+    ...mapGetters(['publicApiUrl'])
   },
   watch: {
     tournament () {

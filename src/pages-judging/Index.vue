@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="apiReady">
+    <div v-if="initialized">
       <b-navbar toggleable="lg" type="dark" variant="dark">
         <b-navbar-brand href="#">
           <b-link to="/" class="navbar-brand">
@@ -22,7 +22,7 @@
         </b-collapse>
 
         <b-navbar-nav class="ml-auto">
-          <login @authenticated="setAuthenticated" :api-url="authApiUrl" />
+          <login />
         </b-navbar-nav>
 
         <b-navbar-nav class="ml-auto">
@@ -39,16 +39,14 @@
 
       <router-view
         :tournament="tournament"
-        :authenticated="authenticated"
-        :public-api-url="publicApiUrl"
-        :auth-api-url="authApiUrl"
-        :judging-api-url="judgingApiUrl"
       />
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import Socket from '../utils/Socket.js'
 import DropdownMenu from '../components/DropdownMenu.vue'
 import Login from '../components/Login.vue'
@@ -59,47 +57,22 @@ export default {
     Login
   },
   props: {
-    baseUrl: { type: String, default: '' }
   },
   data () {
     return {
-      authenticated: null,
-      tournament: null,
-      config: {
-        websocket_url: null,
-        public_path: null,
-        auth_path: null,
-        judging_path: null
-      }
+      tournament: null
     }
   },
   computed: {
-    apiReady () {
-      return this.config.public_path !== null
-    },
-    configUrl () {
-      return `${this.baseUrl}/config`
-    },
-    publicApiUrl () {
-      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}`
-    },
-    authApiUrl () {
-      return this.config.auth_path === null ? '' : `${this.baseUrl}${this.config.auth_path}`
-    },
-    judgingApiUrl () {
-      return this.config.judging_path === null ? '' : `${this.baseUrl}${this.config.judging_path}`
-    },
     tournamentsUrl () {
-      return this.config.public_path === null ? '' : `${this.baseUrl}${this.config.public_path}/tournaments`
-    }
+      return this.initialized ? `${this.publicApiUrl}/tournaments` : null
+    },
+    ...mapGetters(['initialized', 'configUrl', 'publicApiUrl'])
   },
   created () {
     this.fetchConfig()
   },
   methods: {
-    setAuthenticated (data) {
-      this.authenticated = data
-    },
     selectTournament (tournament) {
       this.tournament = tournament
     },
@@ -107,7 +80,7 @@ export default {
       fetch(this.configUrl)
         .then((response) => response.json())
         .then((data) => {
-          this.config = data
+          this.$store.commit('setConfig', data)
           Socket.init(data.websocket_url)
         })
     },

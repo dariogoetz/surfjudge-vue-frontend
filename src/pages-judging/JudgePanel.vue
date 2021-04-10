@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="authenticated !== null">
+    <div v-if="authenticated && state !== null">
       <b-container v-if="state === 'waiting'">
         <b-jumbotron header="Judging Panel" lead="Please wait for heat to start...">
           <hr>
@@ -45,8 +45,6 @@
             hide-footer
           >
             <edit-score
-              :api-url="judgingApiUrl"
-              :authenticated="authenticated"
               :edit-score="editScore"
               @close="cancelEdit"
               @error="showError"
@@ -59,6 +57,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import { lighten, lightenDarkenColor } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket.js'
 import EditScore from '../components/EditScore.vue'
@@ -68,10 +68,7 @@ export default {
     EditScore
   },
   props: {
-    authenticated: { type: Object, default: null },
     tournament: { type: Object, default: null },
-    publicApiUrl: { type: String, default: '' },
-    judgingApiUrl: { type: String, default: '' },
     checkJudge: { type: Boolean, default: true }
   },
   data () {
@@ -80,7 +77,7 @@ export default {
       heatData: null,
       scoresData: null,
       participationsData: null,
-      state: 'waiting',
+      state: null,
       editScore: null,
       showModal: false
     }
@@ -139,13 +136,14 @@ export default {
       ]
     },
     judgeCheckMessage () {
-      if (this.authenticated === null) return ''
-      let name = this.authenticated.username
-      if (this.authenticated.firstName || this.authenticated.lastName) {
-        name = `${this.authenticated.firstName} ${this.authenticated.lastName}`
+      if (!this.authenticated) return ''
+      let name = this.authenticatedUser.username
+      if (this.authenticatedUser.firstName || this.authenticatedUser.lastName) {
+        name = `${this.authenticatedUser.firstName} ${this.authenticatedUser.lastName}`
       }
       return `Are you ${name}?`
-    }
+    },
+    ...mapGetters(['authenticated', 'authenticatedUser', 'publicApiUrl', 'judgingApiUrl'])
   },
   watch: {
     authenticated () {
@@ -162,7 +160,7 @@ export default {
   },
   methods: {
     heatsUrl (heatId) { return `${this.publicApiUrl}/heats/${heatId}` },
-    scoresUrl (heatId) { return `${this.judgingApiUrl}/heats/${heatId}/judges/${this.authenticated.id}/scores` },
+    scoresUrl (heatId) { return `${this.judgingApiUrl}/heats/${heatId}/judges/${this.authenticatedUser.id}/scores` },
     participationsUrl (heatId) { return `${this.publicApiUrl}/participations/${heatId}` },
     initWebSocket () {
       Socket.$on('active-heats', this.refreshActiveAssignments)
@@ -186,7 +184,7 @@ export default {
       return true
     },
     refreshActiveAssignments () {
-      if (this.authenticated === null) return
+      if (!this.authenticated) return
       fetch(this.activeAssignementsUrl, {
         credentials: 'include' // for CORS in dev setup
       })
@@ -295,7 +293,8 @@ export default {
       this.state = 'waiting'
     },
     logout () {
-      this.$emit('logout')
+      console.log('request logout')
+      this.$store.commit('requestLogout')
     }
   }
 }

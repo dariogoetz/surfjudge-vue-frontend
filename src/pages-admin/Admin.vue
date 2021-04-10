@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-container v-if="authenticated !== null">
+    <b-container v-if="isAdmin">
       <b-row
         v-for="[round, round_heats] in guiData"
         :key="round[0]"
@@ -18,11 +18,7 @@
             header-text-variant="white"
           >
             {{ heat.category_id }} <br> {{ heat.name }}
-            <heat-state
-              :heat-id="heat.id"
-              :public-api-url="publicApiUrl"
-              :admin-api-url="adminApiUrl"
-            />
+            <heat-state :heat-id="heat.id" />
           </b-card>
         </b-col>
       </b-row>
@@ -31,6 +27,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 import HeatState from '../components/HeatState.vue'
 
 export default {
@@ -38,10 +36,7 @@ export default {
     HeatState
   },
   props: {
-    authenticated: { type: Object, default: null },
-    tournament: { type: Object, default: null },
-    publicApiUrl: { type: String, default: '' },
-    adminApiUrl: { type: String, default: '' }
+    tournament: { type: Object, default: null }
   },
   data () {
     return {
@@ -74,7 +69,8 @@ export default {
       const roundsHeats = Array.from(c2h)
       roundsHeats.sort((a, b) => a[0] - b[0])
       return roundsHeats
-    }
+    },
+    ...mapGetters(['isAdmin', 'publicApiUrl'])
   },
   watch: {
     tournament (val) {
