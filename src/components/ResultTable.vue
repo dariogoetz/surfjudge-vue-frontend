@@ -5,6 +5,7 @@
       :fields="fields"
       :tbody-tr-attr="row_attr"
       borderless
+      no-select-on-click
     >
       <template #cell(surfer)="data">
         {{ data.value.first_name }} <br v-if="lastNameOnNewline"><b>{{ data.value.last_name.toUpperCase() }}</b>
@@ -26,7 +27,7 @@ export default {
     showNeeds: { type: Boolean, default: true },
     showNeedsSecond: { type: Boolean, default: true },
     lastNameOnNewline: { type: Boolean, default: true },
-    initialData: { type: Object, default: null },
+    initialData: { type: Object, default: null }
   },
   data () {
     return {
