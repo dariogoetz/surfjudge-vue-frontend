@@ -81,11 +81,11 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           this.$store.commit('setConfig', data)
-          Socket.init(data.websocket_url)
+          Socket.init(
+            data.websocket_url,
+            ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores']
+          )
         })
-    },
-    logout () {
-      console.log('logout')
     }
   }
 }

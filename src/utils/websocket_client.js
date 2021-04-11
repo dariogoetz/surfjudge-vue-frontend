@@ -53,7 +53,6 @@ export default class WebSocketClient {
   }
 
   subscribe (channel) {
-    console.log('Subscribing to websocket channel ' + channel + ': ' + this.options.name)
     this.websocket.send(JSON.stringify({ action: 'subscribe', channel: channel }))
   }
 

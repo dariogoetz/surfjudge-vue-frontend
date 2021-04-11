@@ -8,8 +8,11 @@ const emitter = new Vue({
     }
   },
   methods: {
-    init (websocketUrl) {
-      const channelNames = ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests']
+    init (websocketUrl, channelNames) {
+      const defaultChannelNames = ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests']
+      const name = 'App'
+      channelNames = (channelNames || defaultChannelNames)
+      console.log('Subscribing to websocket channels ' + channelNames)
 
       const channels = {}
       channelNames.forEach(channel => {
@@ -23,7 +26,7 @@ const emitter = new Vue({
       this.socket = new WebSocketClient({
         url: websocketUrl,
         channels: channels,
-        name: 'App'
+        name
       })
     }
   }
