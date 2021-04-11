@@ -59,7 +59,7 @@
 <script>
 import { mapGetters } from 'vuex'
 
-import { lighten, lightenDarkenColor } from '../utils/lighten_darken_color'
+import { lightenDarkenColor } from '../utils/lighten_darken_color'
 import Socket from '../utils/Socket.js'
 import EditScore from '../components/EditScore.vue'
 
@@ -69,7 +69,8 @@ export default {
   },
   props: {
     tournament: { type: Object, default: null },
-    checkJudge: { type: Boolean, default: true }
+    checkJudge: { type: Boolean, default: true },
+    nBestWaves: { type: Number, default: 1, validator: (val) => [1, 2].includes(val) }
   },
   data () {
     return {
@@ -79,10 +80,12 @@ export default {
       participationsData: null,
       state: null,
       editScore: null,
-      showModal: false
+      showModal: false,
+      judgingRequestsInterval: null
     }
   },
   computed: {
+    judgingRequestsUrl () { return `${this.judgingApiUrl}/judging_requests` },
     activeAssignementsUrl () { return `${this.judgingApiUrl}/active_judge_assignments` },
     active () { return this.activeHeats.length === 0 },
     rows () {
@@ -103,6 +106,11 @@ export default {
       })
       scoresBySurfer.forEach((s, sid) => {
         const val = data.get(sid)
+        // annotate best waves
+        s.sort((a, b) => b.score - a.score)
+        if (s.length > 1) s[0].best_wave = true
+        if (this.nBestWaves > 1 && s.length > 2) s[1].best_wave = true
+        // order by wave number
         s.sort((a, b) => a.wave - b.wave)
         val.scores = s
       })
@@ -128,9 +136,9 @@ export default {
               if (s === null) return ''
               if (s.interference) return 'I'
               if (s.missed) return 'M'
-              return s.score
+              return s.score.toFixed(1)
             },
-            tdClass: 'scoreElem'
+            tdClass: (value) => value.best_wave ? 'scoreElem bestWave' : 'scoreElem'
           }
         })
       ]
@@ -152,10 +160,12 @@ export default {
   },
   created () {
     // TODO: send judging requests
+    this.registerJudgingRequests()
     this.initWebSocket()
     this.refreshActiveAssignments()
   },
   beforeDestroy () {
+    this.unregisterJudgingRequests()
     this.deinitWebSocket()
   },
   methods: {
@@ -164,15 +174,18 @@ export default {
     participationsUrl (heatId) { return `${this.publicApiUrl}/participations/${heatId}` },
     initWebSocket () {
       Socket.$on('active-heats', this.refreshActiveAssignments)
-      Socket.$on('scores', this.refreshScores)
+      Socket.$on('scores', this.onScores)
       Socket.$on('heats', this.refreshHeat)
       Socket.$on('participants', this.refreshParticipations)
     },
     deinitWebSocket () {
       Socket.$off('active-heats', this.refreshActiveAssignments)
-      Socket.$off('scores', this.refreshScores)
+      Socket.$off('scores', this.onScores)
       Socket.$off('heats', this.refreshHeat)
       Socket.$off('participants', this.refreshParticipations)
+    },
+    onScores (msg) {
+      if (this.authenticatedUser.id === msg.judge_id) this.refreshScores()
     },
     uniqueAssignment () {
       if (this.activeHeats.length !== 1) {
@@ -249,7 +262,7 @@ export default {
     },
     rowAttr (item, type) {
       return {
-        style: `background-color:  ${lighten(item.lycra_color.hex)};`
+        // style: `background-color:  ${lightenDarkenColor(item.lycra_color.hex, 220)};`
       }
     },
     rowClicked (item, index, event) {
@@ -293,8 +306,18 @@ export default {
       this.state = 'waiting'
     },
     logout () {
-      console.log('request logout')
       this.$store.commit('requestLogout')
+    },
+    registerJudgingRequests () {
+      this.judgingRequestsInterval = setInterval(() => {
+        fetch(this.judgingRequestsUrl, {
+          method: 'POST',
+          credentials: 'include'
+        })
+      }, 5000)
+    },
+    unregisterJudgingRequests () {
+      clearInterval(this.judgingRequestsInterval)
     }
   }
 }
@@ -312,6 +335,10 @@ table >>> tr > td
 
 table >>> tr > td.colorElem
   font-weight bold
+
+table >>> tr > td.bestWave
+  font-weight bold
+  background-color #0000ff22
 
 .checkJudge >>> button
   height 100px
