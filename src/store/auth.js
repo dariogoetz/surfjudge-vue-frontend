@@ -8,7 +8,6 @@ const mutations = {
     state.authenticatedUser = authenticatedUser
   },
   requestLogout (state) {
-    console.log('logout request received')
     state.requestLogout = true
   },
   resetLogoutRequest (state) {
@@ -19,6 +18,7 @@ const mutations = {
 const getters = {
   authenticated: state => state.authenticatedUser !== null,
   isAdmin: (state, getters) => getters.authenticated && state.authenticatedUser.permissions.includes('ac_admin'),
+  isJudge: (state, getters) => getters.authenticated && state.authenticatedUser.permissions.includes('ac_judge'),
   authenticatedUser: state => state.authenticatedUser,
   requestLogout: state => state.requestLogout
 }

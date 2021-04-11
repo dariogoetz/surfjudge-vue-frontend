@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="authenticated && state !== null">
+    <div v-if="isJudge && state !== null">
       <b-container v-if="state === 'waiting'">
         <b-jumbotron header="Judging Panel" lead="Please wait for heat to start...">
           <hr>
@@ -144,17 +144,17 @@ export default {
       ]
     },
     judgeCheckMessage () {
-      if (!this.authenticated) return ''
+      if (!this.isJudge) return ''
       let name = this.authenticatedUser.username
       if (this.authenticatedUser.firstName || this.authenticatedUser.lastName) {
         name = `${this.authenticatedUser.firstName} ${this.authenticatedUser.lastName}`
       }
       return `Are you ${name}?`
     },
-    ...mapGetters(['authenticated', 'authenticatedUser', 'publicApiUrl', 'judgingApiUrl'])
+    ...mapGetters(['isJudge', 'authenticatedUser', 'publicApiUrl', 'judgingApiUrl'])
   },
   watch: {
-    authenticated () {
+    isJudge () {
       this.refreshActiveAssignments()
     }
   },
@@ -197,7 +197,7 @@ export default {
       return true
     },
     refreshActiveAssignments () {
-      if (!this.authenticated) return
+      if (!this.isJudge) return
       fetch(this.activeAssignementsUrl, {
         credentials: 'include' // for CORS in dev setup
       })
@@ -310,6 +310,7 @@ export default {
     },
     registerJudgingRequests () {
       this.judgingRequestsInterval = setInterval(() => {
+        if (!this.isJudge) return
         fetch(this.judgingRequestsUrl, {
           method: 'POST',
           credentials: 'include'
