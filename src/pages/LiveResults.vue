@@ -1,6 +1,7 @@
 <template>
   <div>
-    <b-container>
+    <div v-if="guiData === null" />
+    <b-container v-else-if="guiData.length > 0">
       <b-card
         v-for="heat in guiData"
         :key="heat.id"
@@ -15,6 +16,9 @@
           :heat-id="heat.id"
         />
       </b-card>
+    </b-container>
+    <b-container v-else>
+      <b-jumbotron header="Live Results" lead="Currently no heats are running" />
     </b-container>
   </div>
 </template>
@@ -47,7 +51,7 @@ export default {
       return `${this.publicApiUrl}/tournaments/${this.tournament.id}/categories`
     },
     guiData () {
-      if ((this.activeHeats === null) || (this.categories === null)) return []
+      if ((this.activeHeats === null) || (this.categories === null)) return null
       const res = []
       this.activeHeats.forEach((h) => {
         const heat = Object.assign({}, h)

@@ -18,7 +18,8 @@ import {
   FormGroupPlugin,
   FormInputPlugin,
   InputGroupPlugin,
-  AvatarPlugin
+  AvatarPlugin,
+  JumbotronPlugin
 } from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -40,6 +41,7 @@ Vue.use(FormInputPlugin)
 Vue.use(InputGroupPlugin)
 Vue.use(IconsPlugin)
 Vue.use(AvatarPlugin)
+Vue.use(JumbotronPlugin)
 
 /* eslint-disable-next-line no-new */
 new Vue({
