@@ -23,6 +23,7 @@
         </b-col>
       </b-row>
     </b-container>
+    <b-jumbotron v-else header="Admin section" lead="Please log in..."/>
   </div>
 </template>
 
