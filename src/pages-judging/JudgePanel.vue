@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-container v-if="!isJudge" >
+    <b-container v-if="!isJudge">
       <b-jumbotron header="Judge section" lead="Please log in..." />
     </b-container>
     <div v-if="isJudge && state !== null">
