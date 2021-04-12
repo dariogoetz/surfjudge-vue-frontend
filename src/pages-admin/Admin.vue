@@ -24,7 +24,7 @@
       </b-row>
     </b-container>
     <b-container v-else>
-      <b-jumbotron header="Admin section" lead="Please log in..."/>
+      <b-jumbotron header="Admin Section" lead="Please log in..."/>
     </b-container>
   </div>
 </template>
