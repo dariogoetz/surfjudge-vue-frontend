@@ -1,10 +1,11 @@
 <template>
   <div>
+    <b-jumbotron v-if="!isJudge" header="Judge section" lead="Please log in..." />
     <div v-if="isJudge && state !== null">
       <b-container v-if="state === 'waiting'">
         <b-jumbotron header="Judging Panel" lead="Please wait for heat to start...">
           <hr>
-          <img src="/static/img/JudgingPanelWaiting.png" style="width: 600px; margin-left: auto; margin-right: auto; display: block;">
+          <img src="/static/img/JudgingPanelWaiting.png" style="width: 80%; max-width: 600px; margin-left: auto; margin-right: auto; display: block;">
         </b-jumbotron>
       </b-container>
       <b-container class="checkJudge" v-if="state === 'checkJudge'">
@@ -78,7 +79,7 @@ export default {
       heatData: null,
       scoresData: null,
       participationsData: null,
-      state: null,
+      state: 'uninitialized',
       editScore: null,
       showModal: false,
       judgingRequestsInterval: null
