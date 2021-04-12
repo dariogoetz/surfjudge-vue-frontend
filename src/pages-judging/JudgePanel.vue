@@ -1,6 +1,8 @@
 <template>
   <div>
-    <b-jumbotron v-if="!isJudge" header="Judge section" lead="Please log in..." />
+    <b-container v-if="!isJudge" >
+      <b-jumbotron header="Judge section" lead="Please log in..." />
+    </b-container>
     <div v-if="isJudge && state !== null">
       <b-container v-if="state === 'waiting'">
         <b-jumbotron header="Judging Panel" lead="Please wait for heat to start...">
