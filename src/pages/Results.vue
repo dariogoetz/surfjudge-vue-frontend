@@ -36,6 +36,7 @@
               :heat-id="data.heat.id"
               :initial-data="data"
               :show-needs="false"
+              class="result-table"
             />
           </b-card>
         </b-col>
@@ -244,4 +245,7 @@ export default {
 <style lang="stylus" scoped>
 .card-header
   font-size 2em
+
+.result-table
+  overflow auto
 </style>

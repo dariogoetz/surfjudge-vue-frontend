@@ -14,6 +14,7 @@
         </template>
         <result-table
           :heat-id="heat.id"
+          class="result-table"
         />
       </b-card>
     </b-container>
@@ -110,4 +111,7 @@ export default {
 <style lang="stylus" scoped>
 .card-header
   font-size 2em
+
+.result-table
+  overflow auto
 </style>
