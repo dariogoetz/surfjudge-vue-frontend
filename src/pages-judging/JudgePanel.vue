@@ -158,11 +158,20 @@ export default {
   },
   watch: {
     isJudge () {
+      this.activeHeats = []
+      this.heatData = null
+      this.scoresData = null
+      this.participationsData = null
+      this.state = 'uninitialized'
+      this.editScore = null
+      this.showModal = false
+      this.unregisterJudgingRequests()
+      this.registerJudgingRequests()
+
       this.refreshActiveAssignments()
     }
   },
   created () {
-    // TODO: send judging requests
     this.registerJudgingRequests()
     this.initWebSocket()
     this.refreshActiveAssignments()
