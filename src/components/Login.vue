@@ -53,7 +53,7 @@ export default {
   created () {
     // fetch meUrl into this.user
     fetch(this.meUrl, {
-      credentials: 'include' // for CORS in dev setup
+      credentials: 'include'
     })
       .then(response => response.json())
       .then(data => {
@@ -70,7 +70,7 @@ export default {
         method: 'POST',
         body: JSON.stringify({ username: this.username, password: this.password }),
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(response => {
           this.showOverlay = false
@@ -96,7 +96,7 @@ export default {
       this.showOverlay = true
       fetch(this.logoutUrl, {
         method: 'POST',
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(response => {
           this.showOverlay = false

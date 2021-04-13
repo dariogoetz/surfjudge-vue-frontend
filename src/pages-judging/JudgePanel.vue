@@ -211,7 +211,7 @@ export default {
     refreshActiveAssignments () {
       if (!this.isJudge) return
       fetch(this.activeAssignementsUrl, {
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(response => {
           if (!response.ok) {
@@ -240,9 +240,7 @@ export default {
       if (!this.uniqueAssignment()) return
 
       const heatId = this.activeHeats[0].id
-      fetch(this.heatsUrl(heatId), {
-        credentials: 'include' // for CORS in dev setup
-      })
+      fetch(this.heatsUrl(heatId))
         .then(response => response.json())
         .then(data => {
           this.heatData = data
@@ -253,7 +251,7 @@ export default {
 
       const heatId = this.activeHeats[0].id
       fetch(this.scoresUrl(heatId), {
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(response => response.json())
         .then(data => {
@@ -264,9 +262,7 @@ export default {
       if (!this.uniqueAssignment()) return
 
       const heatId = this.activeHeats[0].id
-      fetch(this.participationsUrl(heatId), {
-        credentials: 'include' // for CORS in dev setup
-      })
+      fetch(this.participationsUrl(heatId))
         .then(response => response.json())
         .then(data => {
           this.participationsData = data

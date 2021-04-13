@@ -79,28 +79,28 @@ export default {
     start_heat () {
       fetch(this.startHeatUrl, {
         method: 'POST',
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(res => this.refresh())
     },
     stop_heat () {
       fetch(this.stopHeatUrl, {
         method: 'POST',
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(res => this.refresh())
     },
     toggle_pause_heat () {
       fetch(this.togglePauseHeatUrl, {
         method: 'POST',
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(res => this.refresh())
     },
     reset_heat_time () {
       fetch(this.resetHeatTimeUrl, {
         method: 'POST',
-        credentials: 'include' // for CORS in dev setup
+        credentials: 'include'
       })
         .then(res => this.refresh())
     }
