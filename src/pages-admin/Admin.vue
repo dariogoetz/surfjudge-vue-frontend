@@ -22,6 +22,10 @@
           </b-card>
         </b-col>
       </b-row>
+      <br>
+      <b-row>
+        <judge-requests />
+      </b-row>
     </b-container>
     <b-container v-else>
       <b-jumbotron header="Admin Section" lead="Please log in..."/>
@@ -33,10 +37,12 @@
 import { mapGetters } from 'vuex'
 
 import HeatState from '../components/HeatState.vue'
+import JudgeRequests from '../components/JudgeRequests.vue'
 
 export default {
   components: {
-    HeatState
+    HeatState,
+    JudgeRequests
   },
   props: {
     tournament: { type: Object, default: null }

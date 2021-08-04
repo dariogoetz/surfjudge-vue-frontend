@@ -1,6 +1,8 @@
 <template>
   <div>
     <b-table
+      :items="rows"
+      :fields="fields"
       class="table table-striped judging_requests_table"
       data-toggle="table"
       data-sort-name="judge_id"
@@ -20,11 +22,44 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import Socket from '../utils/Socket'
+
 export default {
   props: {},
   data () {
     return {
     }
+  },
+  computed: {
+    rows() {
+      return []
+    },
+    fields() {
+      return [
+        {
+          key: 'judge_id',
+          label: 'Judge ID'
+        },
+        {
+          key: 'name',
+          label: 'Judge Name'
+        },
+        {
+          key: 'expires',
+          label: 'Expires'
+        },
+        {
+          key: 'status',
+          label: 'Status'
+        },
+        {
+          key: 'action',
+          label: 'Action'
+        },
+      ]
+    },
+  ...mapGetters(['adminApiUrl'])
   }
 }
 </script>
