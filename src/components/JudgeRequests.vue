@@ -29,16 +29,30 @@ export default {
   props: {},
   data () {
     return {
+      judgingRequests: null
     }
   },
   computed: {
+    getJudgingRequestsUrl () { return `${this.adminApiUrl}/judging_requests` },
     rows() {
-      return []
+      let res = []
+      if (this.judgingRequests === null) return res
+      this.judgingRequests.forEach((req, i) => {
+        res.push({
+          judgeId: req.judge_id,
+          name: `${req.judge.first_name} ${req.judge.last_name}`,
+          expires: req.expire_date,
+          status: "tbd",
+          actions: "tbd"
+        })
+      })
+      res.sort((a, b) => a.judgeId - b.judgeId)
+      return res
     },
     fields() {
       return [
         {
-          key: 'judge_id',
+          key: 'judgeId',
           label: 'Judge ID'
         },
         {
@@ -60,6 +74,33 @@ export default {
       ]
     },
   ...mapGetters(['adminApiUrl'])
+  },
+  created () {
+    this.initWebSocket()
+    this.refresh()
+  },
+  beforeDestroy () {
+    this.deinitWebSocket()
+  },
+  methods: {
+    initWebSocket () {
+      Socket.$on('judging-requests', this.onJudgingRequests)
+    },
+    deinitWebSocket () {
+      Socket.$off('judging-requests', this.onJudgingRequests)
+    },
+    onJudgingRequests () {
+      this.refresh()
+    },
+    refresh () {
+      fetch(this.getJudgingRequestsUrl, {
+        credentials: 'include'
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.judgingRequests = data
+        })
+    }
   }
 }
 </script>
