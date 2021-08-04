@@ -37,15 +37,15 @@ module.exports = {
       }, {
         test: /\.css$/,
         use: [
-          'vue-style-loader',
-          MiniCssExtractPlugin.loader,
+          'style-loader',
+          // MiniCssExtractPlugin.loader,
           'css-loader'
         ]
       }, {
         test: /\.styl(us)?$/,
         use: [
-          'vue-style-loader',
-          MiniCssExtractPlugin.loader,
+          'style-loader',
+          // MiniCssExtractPlugin.loader,
           'css-loader',
           'stylus-loader'
         ]

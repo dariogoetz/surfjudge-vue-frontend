@@ -37,16 +37,16 @@ module.exports = {
       }, {
         test: /\.css$/,
         use: [
-          'vue-style-loader',
-          //MiniCssExtractPlugin.loader,  // gives a similar error like when using esModule: true for css-loader
-          {loader: 'css-loader', options: {esModule: false}},
+          'style-loader',
+          // MiniCssExtractPlugin.loader, // gives a similar error like when using esModule: true for css-loader
+          'css-loader'
         ]
       }, {
         test: /\.styl(us)?$/,
         use: [
-          'vue-style-loader',
-          //MiniCssExtractPlugin.loader,  // gives a similar error like when using esModule: true for css-loader
-          {loader: 'css-loader', options: {esModule: false}},
+          'style-loader',
+          // MiniCssExtractPlugin.loader, // gives a similar error like when using esModule: true for css-loader
+          'css-loader',
           'stylus-loader'
         ]
       }
