@@ -35,15 +35,15 @@ module.exports = {
       }, {
         test: /\.css$/,
         use: [
-          'style-loader',
-          // MiniCssExtractPlugin.loader,
+          // 'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader'
         ]
       }, {
         test: /\.styl(us)?$/,
         use: [
-          'style-loader',
-          // MiniCssExtractPlugin.loader,
+          // 'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
           'stylus-loader'
         ]
