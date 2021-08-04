@@ -95,7 +95,7 @@ export default {
       if (this.participationsData === null) return []
       const data = new Map()
       this.participationsData.forEach((part, i) => {
-        data.set(part.surfer_id, Object.assign({}, part))
+        data.set(part.surfer_id, Object.assign({scores: []}, part))
       })
       const scores = (this.scoresData || [])
       const scoresBySurfer = new Map()
@@ -275,7 +275,7 @@ export default {
     },
     rowClicked (item, index, event) {
       const colIndex = event.target.cellIndex
-      const maxWave = Math.max(...item.scores.map(score => score.wave))
+      const maxWave = Math.max(-1, ...item.scores.map(score => score.wave))
 
       const scoresMap = new Map(item.scores.map(v => [v.wave, v]))
       // determine which wave is to be edited
