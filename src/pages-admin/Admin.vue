@@ -12,6 +12,10 @@
           :key="heat.id"
           class="mb-sm-3"
         >
+          <b-row>
+            <judge-requests :heat-id="heat.id" />
+          </b-row>
+          <br>
           <b-card
             no-body
             header-bg-variant="secondary"
@@ -21,10 +25,6 @@
             <heat-state :heat-id="heat.id" />
           </b-card>
         </b-col>
-      </b-row>
-      <br>
-      <b-row>
-        <judge-requests />
       </b-row>
     </b-container>
     <b-container v-else>

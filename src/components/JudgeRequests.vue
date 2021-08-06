@@ -26,23 +26,37 @@ import { mapGetters } from 'vuex'
 import Socket from '../utils/Socket'
 
 export default {
-  props: {},
+  props: {
+    heatId: { type: Number, required: true },
+  },
   data () {
     return {
-      judgingRequests: null
+      judgingRequests: null,
+      judgingAssignments: null,
     }
   },
   computed: {
     getJudgingRequestsUrl () { return `${this.adminApiUrl}/judging_requests` },
+    getJudgingAssignmentsUrl () {return `${this.adminApiUrl}/heats/${this.heatId}/assigned_judges`},
     rows() {
       let res = []
       if (this.judgingRequests === null) return res
-      this.judgingRequests.forEach((req, i) => {
+      if (this.judgingAssignments === null) return res
+      this.judgingRequests.forEach(req => {
         res.push({
           judgeId: req.judge_id,
           name: `${req.judge.first_name} ${req.judge.last_name}`,
           expires: req.expire_date,
-          status: "tbd",
+          status: "request",
+          actions: "tbd"
+        })
+      })
+      this.judgingAssignments.forEach(req => {
+        res.push({
+          judgeId: req.id,
+          name: `${req.first_name} ${req.last_name}`,
+          expires: 0,
+          status: "assignment",
           actions: "tbd"
         })
       })
@@ -92,7 +106,7 @@ export default {
     onJudgingRequests () {
       this.refresh()
     },
-    refresh () {
+    fetchJudgingRequests () {
       fetch(this.getJudgingRequestsUrl, {
         credentials: 'include'
       })
@@ -100,6 +114,19 @@ export default {
         .then(data => {
           this.judgingRequests = data
         })
+    },
+    fetchJudgingAssignments () {
+      fetch(this.getJudgingAssignmentsUrl, {
+        credentials: 'include'
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.judgingAssignments = data
+        })
+    },
+    refresh () {
+      this.fetchJudgingRequests()
+      this.fetchJudgingAssignments()
     }
   }
 }
