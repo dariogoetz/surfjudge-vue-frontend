@@ -3,7 +3,8 @@
     <b-table
       :items="rows"
       :fields="fields"
-      class="table table-striped judging_requests_table"
+      :tbody-tr-class="row_class"
+      class="table judging_requests_table"
       data-toggle="table"
       data-sort-name="judge_id"
       date-sort-order="asc">
@@ -45,8 +46,11 @@ export default {
       let requests = new Set(this.judgingRequests.map(r => r.judge_id))
       let assignments = new Set(this.judgingAssignments.map(r => r.id))
       let confirmed = this.judgingRequests.filter(r => assignments.has(r.judge_id))
-      let offering = this.judgingRequests.filter(r => !assignments.has(r.judge_id))
+      let pending = this.judgingRequests.filter(r => !assignments.has(r.judge_id))
       let missing = this.judgingAssignments.filter(a => !requests.has(a.id))
+      confirmed.sort((a, b) => a.judge_id - b.judge_id)
+      missing.sort((a, b) => a.id - b.id)
+      pending.sort((a, b) => a.judge_id - b.judge_id)
       confirmed.forEach(req => {
         res.push({
           judgeId: req.judge_id,
@@ -56,25 +60,24 @@ export default {
           actions: 'tbd'
         })
       })
-      offering.forEach(req => {
-        res.push({
-          judgeId: req.judge_id,
-          name: `${req.judge.first_name} ${req.judge.last_name}`,
-          expires: req.expire_date,
-          status: 'offering',
-          actions: 'tbd'
-        })
-      })
       missing.forEach(assignment => {
         res.push({
           judgeId: assignment.id,
           name: `${assignment.first_name} ${assignment.last_name}`,
-          expires: 0,
+          expires: '-',
           status: 'missing',
           actions: 'tbd'
         })
       })
-      res.sort((a, b) => a.judgeId - b.judgeId)
+      pending.forEach(req => {
+        res.push({
+          judgeId: req.judge_id,
+          name: `${req.judge.first_name} ${req.judge.last_name}`,
+          expires: req.expire_date,
+          status: 'pending',
+          actions: 'tbd'
+        })
+      })
       return res
     },
     fields() {
@@ -141,7 +144,20 @@ export default {
     refresh () {
       this.fetchJudgingRequests()
       this.fetchJudgingAssignments()
+    },
+    row_class (item, type) {
+      return item.status
     }
   }
 }
 </script>
+
+<style lang="stylus" scoped>
+table >>> tr.missing
+  background-color #FF8888
+
+table >>> tr.confirmed
+  background-color #88FF88
+
+
+</style>
