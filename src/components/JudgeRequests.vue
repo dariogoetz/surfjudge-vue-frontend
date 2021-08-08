@@ -42,22 +42,36 @@ export default {
       let res = []
       if (this.judgingRequests === null) return res
       if (this.judgingAssignments === null) return res
-      this.judgingRequests.forEach(req => {
+      let requests = new Set(this.judgingRequests.map(r => r.judge_id))
+      let assignments = new Set(this.judgingAssignments.map(r => r.id))
+      let confirmed = this.judgingRequests.filter(r => assignments.has(r.judge_id))
+      let offering = this.judgingRequests.filter(r => !assignments.has(r.judge_id))
+      let missing = this.judgingAssignments.filter(a => !requests.has(a.id))
+      confirmed.forEach(req => {
         res.push({
           judgeId: req.judge_id,
           name: `${req.judge.first_name} ${req.judge.last_name}`,
           expires: req.expire_date,
-          status: "request",
-          actions: "tbd"
+          status: 'confirmed',
+          actions: 'tbd'
         })
       })
-      this.judgingAssignments.forEach(req => {
+      offering.forEach(req => {
         res.push({
-          judgeId: req.id,
-          name: `${req.first_name} ${req.last_name}`,
+          judgeId: req.judge_id,
+          name: `${req.judge.first_name} ${req.judge.last_name}`,
+          expires: req.expire_date,
+          status: 'offering',
+          actions: 'tbd'
+        })
+      })
+      missing.forEach(assignment => {
+        res.push({
+          judgeId: assignment.id,
+          name: `${assignment.first_name} ${assignment.last_name}`,
           expires: 0,
-          status: "assignment",
-          actions: "tbd"
+          status: 'missing',
+          actions: 'tbd'
         })
       })
       res.sort((a, b) => a.judgeId - b.judgeId)
