@@ -12,10 +12,6 @@
           :key="heat.id"
           class="mb-sm-3"
         >
-          <b-row>
-            <judge-requests :heat-id="heat.id" />
-          </b-row>
-          <br>
           <b-card
             no-body
             header-bg-variant="secondary"
@@ -26,6 +22,10 @@
           </b-card>
         </b-col>
       </b-row>
+        <b-row>
+          <judge-requests :heat-id="1" />
+        </b-row>
+        <br>
     </b-container>
     <b-container v-else>
       <b-jumbotron header="Admin Section" lead="Please log in..."/>
