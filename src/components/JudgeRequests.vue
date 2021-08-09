@@ -10,7 +10,9 @@
     >
       
       <template #cell(action)="data">
-        <div v-if="data.item.status==='confirmed'">Hallo</div>
+        <b-button v-if="data.item.status==='pending'" @click="confirmJudge(data.item.judgeId)" variant="success" ><b-icon-x-circle-fill /></b-button>
+        <b-button v-if="data.item.status==='confirmed'" @click="unassignJudge(data.item.judgeId)" variant="secondary" ><b-icon-x-circle-fill /></b-button>
+        <b-button v-if="data.item.status==='missing'" @click="unassignJudge(data.item.judgeId)" variant="danger" ><b-icon-x-circle-fill /></b-button>
       </template>
 
     </b-table>
@@ -143,17 +145,26 @@ export default {
     },
     row_class (item, type) {
       return item.status
+    },
+    unassignJudge (judgeId) {
+      console.log('unassigning', judgeId)
+    },
+    confirmJudge (judgeId) {
+      console.log('confirmeng', judgeId)
     }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+
 table >>> tr.missing
   background-color #FF8888
 
 table >>> tr.confirmed
   background-color #88FF88
 
+table >>> tr > td
+  vertical-align middle
 
 </style>
