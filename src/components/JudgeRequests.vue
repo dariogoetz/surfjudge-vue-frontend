@@ -150,7 +150,7 @@ export default {
       console.log('unassigning', judgeId)
     },
     confirmJudge (judgeId) {
-      console.log('confirmeng', judgeId)
+      console.log('confirming', judgeId)
     }
   }
 }
