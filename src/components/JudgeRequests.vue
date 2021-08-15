@@ -10,7 +10,7 @@
     >
       
       <template #cell(action)="data">
-        <b-button v-if="data.item.status==='pending'" @click="confirmJudge(data.item.judgeId)" variant="success" ><b-icon-x-circle-fill /></b-button>
+        <b-button v-if="data.item.status==='pending'" @click="confirmJudge(data.item.judgeId)" variant="success" ><b-icon-check-circle-fill /></b-button>
         <b-button v-if="data.item.status==='confirmed'" @click="unassignJudge(data.item.judgeId)" variant="secondary" ><b-icon-x-circle-fill /></b-button>
         <b-button v-if="data.item.status==='missing'" @click="unassignJudge(data.item.judgeId)" variant="danger" ><b-icon-x-circle-fill /></b-button>
       </template>
@@ -36,7 +36,7 @@ export default {
   },
   computed: {
     getJudgingRequestsUrl () { return `${this.adminApiUrl}/judging_requests` },
-    getJudgingAssignmentsUrl () {return `${this.adminApiUrl}/heats/${this.heatId}/assigned_judges`},
+    getJudgingAssignmentsUrl () { return `${this.adminApiUrl}/heats/${this.heatId}/assigned_judges` },
     rows() {
       let res = []
       if (this.judgingRequests === null) return res
@@ -112,14 +112,21 @@ export default {
     this.deinitWebSocket()
   },
   methods: {
+    putJudgingAssignmentUrl (judgeId) { return `${this.adminApiUrl}/heats/${this.heatId}/judges/${judgeId}` },
+    deleteJudgingAssignmentUrl (judgeId) { return `${this.adminApiUrl}/heats/${this.heatId}/judges/${judgeId}` },
     initWebSocket () {
       Socket.$on('judging-requests', this.onJudgingRequests)
+      Socket.$on('judging-assignments', this.onJudgingAssignments)
     },
     deinitWebSocket () {
       Socket.$off('judging-requests', this.onJudgingRequests)
+      Socket.$off('judging-assignments', this.onJudgingAssignments)
     },
     onJudgingRequests () {
-      this.refresh()
+      this.fetchJudgingRequests()
+    },
+    onJudgingAssignments () {
+      this.fetchJudgingAssignments()
     },
     fetchJudgingRequests () {
       fetch(this.getJudgingRequestsUrl, {
@@ -147,10 +154,18 @@ export default {
       return item.status
     },
     unassignJudge (judgeId) {
-      console.log('unassigning', judgeId)
+      fetch(this.deleteJudgingAssignmentUrl(judgeId), {
+        method: 'DELETE',
+        credentials: 'include'
+      })
     },
     confirmJudge (judgeId) {
-      console.log('confirming', judgeId)
+      fetch(this.putJudgingAssignmentUrl(judgeId), {
+        method: 'PUT',
+        body: JSON.stringify({'heat_id': this.heatId, 'judge_id': judgeId}),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
     }
   }
 }

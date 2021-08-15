@@ -9,7 +9,7 @@ const emitter = new Vue({
   },
   methods: {
     init (websocketUrl, channelNames) {
-      const defaultChannelNames = ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests']
+      const defaultChannelNames = ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests', 'judging_assignments']
       const name = 'App'
       channelNames = (channelNames || defaultChannelNames)
       console.log('Subscribing to websocket channels ' + channelNames)

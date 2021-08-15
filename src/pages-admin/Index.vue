@@ -99,7 +99,7 @@ export default {
           this.$store.commit('setConfig', data)
           Socket.init(
             data.websocket_url,
-            ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests']
+            ['active_heats', 'results', 'participants', 'advancements', 'heats', 'scores', 'judging_requests', 'judging_assignments']
           )
         })
     }
