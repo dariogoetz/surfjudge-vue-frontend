@@ -27,7 +27,8 @@ export default {
     showNeeds: { type: Boolean, default: true },
     showNeedsSecond: { type: Boolean, default: true },
     lastNameOnNewline: { type: Boolean, default: true },
-    initialData: { type: Object, default: null }
+    initialData: { type: Object, default: null },
+    showPreliminaryScores: {type: Boolean, default: false }
   },
   data () {
     return {
@@ -42,7 +43,11 @@ export default {
       return (this.showNeeds && this.heat_type !== 'call') || false
     },
     resultsUrl () {
-      return `${this.publicApiUrl}/heats/${this.heatId}/results`
+      if (this.showPreliminaryScores) {
+        return `${this.adminApiUrl}/heats/${this.heatId}/preliminary_results`
+      } else {
+        return `${this.publicApiUrl}/heats/${this.heatId}/results}`
+      }
     },
     heatUrl () {
       return `${this.publicApiUrl}/heats/${this.heatId}`
@@ -77,8 +82,12 @@ export default {
         {
           key: 'total_score',
           label: 'Score',
-          formatter: (s) => s === null ? '-' : round(s, this.roundDecimals).toFixed(this.roundDecimals),
-          tdClass: 'total_score_cell',
+          formatter: (s) => s === null ? '-' : round(s.score, this.roundDecimals).toFixed(this.roundDecimals),
+          tdClass: (value, key, item) => {
+            let res = 'total_score_cell'
+            if (!value.published) res += ' unpublished'
+            return res
+          },
           thClass: 'total_score_header'
         },
         ...(this.needsVisible ? [{
@@ -99,7 +108,12 @@ export default {
             key: `wave_${i}`,
             formatter: (s) => s ? round(s.score, this.roundDecimals).toFixed(this.roundDecimals) : '',
             label: `Wave ${i + 1}`,
-            tdClass: (value, key, item) => value.best_wave ? 'best_wave wave_score_cell' : 'wave_score_cell',
+            tdClass: (value, key, item) => {
+              let res = 'wave_score_cell'
+              if (value.best_wave) res += ' best_wave'
+              if (!value.published) res += ' unpublished'
+              return res
+            },
             thClass: 'wave_score_header'
           }
         })
@@ -139,7 +153,7 @@ export default {
           const r = resultMap.get(part.surfer_id)
           Object.assign(row, {
             place: r.place + 1,
-            total_score: r.total_score
+            total_score: {score: r.total_score, published: r.published}
           })
 
           // extract wave scores into row
@@ -197,7 +211,7 @@ export default {
       })
       return needs
     },
-    ...mapGetters(['publicApiUrl'])
+    ...mapGetters(['publicApiUrl', 'adminApiUrl'])
   },
   watch: {
     initialData (val) {
@@ -254,7 +268,9 @@ export default {
       }
     },
     fetchResults () {
-      return fetch(this.resultsUrl)
+      return fetch(this.resultsUrl, {
+        'credentials': 'include'
+      })
         .then(response => response.json())
         .then(data => { this.results = data })
     },
@@ -327,6 +343,17 @@ table >>> tr
 
 table >>> tr > td
   vertical-align middle
+
+table >>> tr > td.unpublished
+  background repeating-linear-gradient(
+        45deg,
+        #00000000,
+        #00000000 10px,
+        #00000022 10px,
+        #00000022 20px
+      )
+  color #333333
+
 
 table >>> tr > td.place_cell
   background-color rgba(0, 0, 0, 0.1)
