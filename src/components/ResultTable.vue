@@ -46,7 +46,7 @@ export default {
       if (this.showPreliminaryScores) {
         return `${this.adminApiUrl}/heats/${this.heatId}/preliminary_results`
       } else {
-        return `${this.publicApiUrl}/heats/${this.heatId}/results}`
+        return `${this.publicApiUrl}/heats/${this.heatId}/results`
       }
     },
     heatUrl () {
