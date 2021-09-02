@@ -62,13 +62,13 @@ export default {
   methods: {
     initWebSocket () {
       Socket.$on('results', this.onResults)
-      Socket.$on('preliminary-results', this.onPreliminaryResults)
+      Socket.$on('scores', this.onScores)
     },
     deinitWebSocket () {
       Socket.$off('results', this.onResults)
-      Socket.$off('preliminary-results', this.onPreliminaryResults)
+      Socket.$off('scores', this.onScores)
     },
-    onPreliminaryResults (msg) {
+    onScores (msg) {
       if (!('heat_id' in msg)) return
       const heatId = parseInt(msg.heat_id)
       if (this.heatId === heatId) {
