@@ -19,11 +19,13 @@
           >
             {{ heat.category_id }} <br> {{ heat.name }}
             <heat-state :heat-id="heat.id" />
+            <publish-button :heat-id="heat.id" />
           </b-card>
         </b-col>
       </b-row>
         <b-row>
-          <judge-requests :heat-id="1" />
+          <judge-requests :heat-id="70" />
+          <publish-button :heat-id="70" />
         </b-row>
         <br>
     </b-container>
@@ -38,11 +40,13 @@ import { mapGetters } from 'vuex'
 
 import HeatState from '../components/HeatState.vue'
 import JudgeRequests from '../components/JudgeRequests.vue'
+import PublishButton from '../components/PublishButton.vue'
 
 export default {
   components: {
     HeatState,
-    JudgeRequests
+    JudgeRequests,
+    PublishButton
   },
   props: {
     tournament: { type: Object, default: null }
